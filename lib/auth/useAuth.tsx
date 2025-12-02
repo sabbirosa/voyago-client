@@ -14,12 +14,35 @@ export type AuthUser = {
   role: UserRole;
 } | null;
 
+type RegisterPayload = {
+  name: string;
+  email: string;
+  password: string;
+  role?: "TOURIST" | "GUIDE" | "ADMIN";
+};
+
+type RegisterResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      role: UserRole;
+      isApproved: boolean;
+      isEmailVerified: boolean;
+    };
+  };
+};
+
 type AuthContextValue = {
   user: AuthUser;
   isLoading: boolean;
   isAuthenticated: boolean;
   role: UserRole;
   login: (payload: { email: string; password: string }) => Promise<void>;
+  register: (payload: RegisterPayload) => Promise<RegisterResponse["data"]>;
   logout: () => Promise<void>;
 };
 
@@ -76,6 +99,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const register = async (payload: RegisterPayload) => {
+    setIsLoading(true);
+    try {
+      const response = await apiFetch<RegisterResponse>("/auth/register", {
+        method: "POST",
+        body: payload,
+      });
+
+      // Registration successful - user needs to verify OTP
+      return response.data;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = async () => {
     clearTokens();
     setUser(null);
@@ -89,6 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!user,
         role: user?.role ?? null,
         login,
+        register,
         logout,
       }}
     >

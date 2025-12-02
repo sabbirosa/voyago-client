@@ -31,9 +31,23 @@ export async function apiFetch<TResponse>(
   });
 
   if (!res.ok) {
-    // Optionally, you can extend this to parse structured error responses
+    // Try to parse structured error response
+    let errorMessage = `Request failed with status ${res.status}`;
+    try {
+      const errorData = await res.json();
+      if (errorData.message) {
+        errorMessage = errorData.message;
+      } else if (errorData.error) {
+        errorMessage = errorData.error;
+      }
+    } catch {
+      // If JSON parsing fails, use text
     const text = await res.text();
-    throw new Error(text || `Request failed with status ${res.status}`);
+      if (text) {
+        errorMessage = text;
+      }
+    }
+    throw new Error(errorMessage);
   }
 
   // Handle empty responses gracefully

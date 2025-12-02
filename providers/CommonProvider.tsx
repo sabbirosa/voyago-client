@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth/useAuth";
 import { ThemeProvider } from "./theme-provider";
 
@@ -16,6 +17,7 @@ export default function CommonProvider({
           disableTransitionOnChange
         >
           {children}
+          <Toaster />
         </ThemeProvider>
       </AuthProvider>
     </>
