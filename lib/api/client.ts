@@ -1,8 +1,6 @@
 "use client";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") ||
-  "http://localhost:5000/api/v1";
+import { clientEnv } from "@/app/env";
 
 type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
@@ -16,7 +14,9 @@ export async function apiFetch<TResponse>(
     withCredentials?: boolean;
   } = {}
 ): Promise<TResponse> {
-  const url = `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  const url = `${clientEnv.apiUrl}${
+    path.startsWith("/") ? path : `/${path}`
+  }`;
 
   const { method = "GET", body, headers, withCredentials } = options;
 

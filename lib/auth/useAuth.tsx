@@ -2,6 +2,9 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
+import { apiFetch } from "@/lib/api/client";
+import { clearTokens, getTokens, saveTokens } from "@/lib/auth/tokenStorage";
+
 export type UserRole = "TOURIST" | "GUIDE" | "ADMIN" | null;
 
 export type AuthUser = {
@@ -16,7 +19,6 @@ type AuthContextValue = {
   isLoading: boolean;
   isAuthenticated: boolean;
   role: UserRole;
-  // Placeholder methods – real implementations will be added in Auth module
   login: (payload: { email: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -28,22 +30,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // TODO: hydrate from cookies / localStorage or call `/api/auth/me`
+    // Hydrate auth state from stored tokens for now.
+    const tokens = getTokens();
+
+    if (tokens) {
+      // In a later module we will call `/auth/me` to get the real user.
+      setUser({
+        id: "placeholder",
+        name: "Voyago User",
+        email: "user@example.com",
+        role: "TOURIST",
+      });
+    }
+
     setIsLoading(false);
   }, []);
 
-  const login = async (_payload: { email: string; password: string }) => {
-    // TODO: call backend login endpoint and set user state
+  const login = async (payload: { email: string; password: string }) => {
+    setIsLoading(true);
+    try {
+      const response = await apiFetch<{
+        success: boolean;
+        data: {
+          accessToken: string;
+          refreshToken: string;
+          expiresIn: string;
+        };
+      }>("/auth/login", {
+        method: "POST",
+        body: payload,
+      });
+
+      const { accessToken, refreshToken } = response.data;
+      saveTokens({ accessToken, refreshToken });
+
+      // TODO: decode token or fetch `/auth/me` for real user info.
     setUser({
       id: "placeholder",
       name: "Voyago User",
       email: "user@example.com",
       role: "TOURIST",
     });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = async () => {
-    // TODO: call backend logout endpoint and clear user state
+    clearTokens();
     setUser(null);
   };
 
