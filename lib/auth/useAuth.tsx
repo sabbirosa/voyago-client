@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 import { apiFetch } from "@/lib/api/client";
+import { getMyProfile } from "@/lib/api/user";
 import { clearTokens, getTokens, saveTokens } from "@/lib/auth/tokenStorage";
 
 export type UserRole = "TOURIST" | "GUIDE" | "ADMIN" | null;
@@ -64,20 +65,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Hydrate auth state from stored tokens for now.
+    // Hydrate auth state from stored tokens
     const tokens = getTokens();
 
     if (tokens) {
-      // In a later module we will call `/auth/me` to get the real user.
-      setUser({
-        id: "placeholder",
-        name: "Voyago User",
-        email: "user@example.com",
-        role: "TOURIST",
-      });
+      // Fetch real user profile from backend
+      getMyProfile()
+        .then((profile) => {
+          setUser({
+            id: profile.id,
+            name: profile.name,
+            email: profile.email,
+            role: profile.role,
+          });
+        })
+        .catch(() => {
+          // If profile fetch fails, clear tokens and user
+          clearTokens();
+          setUser(null);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    } else {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   }, []);
 
   const login = async (payload: { email: string; password: string }) => {
@@ -98,13 +110,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { accessToken, refreshToken } = response.data;
       saveTokens({ accessToken, refreshToken });
 
-      // TODO: decode token or fetch `/auth/me` for real user info.
-    setUser({
-      id: "placeholder",
-      name: "Voyago User",
-      email: "user@example.com",
-      role: "TOURIST",
-    });
+      // Fetch real user profile
+      const profile = await getMyProfile();
+      setUser({
+        id: profile.id,
+        name: profile.name,
+        email: profile.email,
+        role: profile.role,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -136,12 +149,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { accessToken, refreshToken } = response.data;
       saveTokens({ accessToken, refreshToken });
 
-      // TODO: decode token or fetch `/auth/me` for real user info.
+      // Fetch real user profile
+      const profile = await getMyProfile();
       setUser({
-        id: "placeholder",
-        name: "Voyago User",
-        email: payload.email,
-        role: "TOURIST",
+        id: profile.id,
+        name: profile.name,
+        email: profile.email,
+        role: profile.role,
       });
     } finally {
       setIsLoading(false);

@@ -1,14 +1,23 @@
 "use client";
 
-import * as React from "react";
+import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import * as React from "react";
 
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -17,8 +26,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { SortOrder } from "@/lib/hooks/use-table-query";
 
 type DataTableProps<TData, TValue> = {
@@ -36,6 +43,7 @@ type DataTableProps<TData, TValue> = {
   sortBy?: string | null;
   sortOrder?: SortOrder | null;
   onSortChange?: (sortBy: string | null, sortOrder: SortOrder | null) => void;
+  filters?: React.ReactNode;
 };
 
 export function DataTableCommon<TData, TValue>({
@@ -52,6 +60,7 @@ export function DataTableCommon<TData, TValue>({
   sortBy,
   sortOrder,
   onSortChange,
+  filters,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -76,16 +85,19 @@ export function DataTableCommon<TData, TValue>({
   return (
     <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-2">
-        {onSearchChange && (
-          <div className="w-full max-w-xs">
-            <Input
-              placeholder="Search…"
-              value={search ?? ""}
-              onChange={(e) => onSearchChange(e.target.value)}
-            />
-          </div>
-        )}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2 flex-1 justify-between">
+          {onSearchChange && (
+            <div className="w-full max-w-xs">
+              <Input
+                placeholder="Search…"
+                value={search ?? ""}
+                onChange={(e) => onSearchChange(e.target.value)}
+              />
+            </div>
+          )}
+          {filters && <div className="flex items-center gap-2">{filters}</div>}
+        </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {typeof total === "number" && <span>{total} items</span>}
         </div>
@@ -99,19 +111,27 @@ export function DataTableCommon<TData, TValue>({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const columnId = header.column.id;
-                  const canSort = header.column.getCanSort?.() ?? Boolean(onSortChange);
+                  const canSort =
+                    header.column.getCanSort?.() ?? Boolean(onSortChange);
                   const isActiveSort = sortBy === columnId;
                   const direction = isActiveSort ? sortOrder : null;
 
                   return (
                     <TableHead
                       key={header.id}
-                      onClick={canSort ? () => handleToggleSort(columnId) : undefined}
-                      className={canSort ? "cursor-pointer select-none" : undefined}
+                      onClick={
+                        canSort ? () => handleToggleSort(columnId) : undefined
+                      }
+                      className={
+                        canSort ? "cursor-pointer select-none" : undefined
+                      }
                     >
                       {header.isPlaceholder
                         ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                       {canSort && (
                         <span className="ml-1 inline-block text-muted-foreground">
                           {direction === "asc" && "↑"}
@@ -126,24 +146,35 @@ export function DataTableCommon<TData, TValue>({
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  Loading…
-                </TableCell>
-              </TableRow>
+              // Show skeleton rows
+              Array.from({ length: pageSize }).map((_, index) => (
+                <TableRow key={`skeleton-${index}`}>
+                  {columns.map((_, colIndex) => (
+                    <TableCell key={`skeleton-cell-${colIndex}`}>
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
             ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>
@@ -199,5 +230,3 @@ export function DataTableCommon<TData, TValue>({
     </div>
   );
 }
-
-

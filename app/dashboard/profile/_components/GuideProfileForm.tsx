@@ -1,8 +1,7 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -12,16 +11,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Spinner } from "@/components/ui/spinner";
+import { updateGuideProfile, type GuideProfile } from "@/lib/api/user";
 import {
-  updateGuideProfileSchema,
   expertiseOptions,
+  updateGuideProfileSchema,
   type UpdateGuideProfileFormData,
 } from "@/lib/validation/profile";
-import { updateGuideProfile, type GuideProfile } from "@/lib/api/user";
-import { toast } from "sonner";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 interface GuideProfileFormProps {
   initialData?: GuideProfile | null;
@@ -37,7 +37,7 @@ export function GuideProfileForm({
   const form = useForm<UpdateGuideProfileFormData>({
     resolver: zodResolver(updateGuideProfileSchema),
     defaultValues: {
-      expertise: initialData?.expertise || [],
+      expertise: initialData?.expertise as (typeof expertiseOptions)[number][],
       dailyRate: initialData?.dailyRate || undefined,
       experienceYears: initialData?.experienceYears || undefined,
     },
@@ -126,9 +126,7 @@ export function GuideProfileForm({
                     value={field.value || ""}
                     onChange={(e) =>
                       field.onChange(
-                        e.target.value
-                          ? parseFloat(e.target.value)
-                          : undefined
+                        e.target.value ? parseFloat(e.target.value) : undefined
                       )
                     }
                     disabled={isLoading}
@@ -185,4 +183,3 @@ export function GuideProfileForm({
     </Form>
   );
 }
-

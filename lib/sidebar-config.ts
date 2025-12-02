@@ -38,7 +38,7 @@ export type SidebarConfig = {
   documents: DocumentItem[];
 };
 
-type RoleKey = UserRole | "GUEST";
+type RoleKey = NonNullable<UserRole> | "GUEST";
 
 const baseConfig: SidebarConfig = {
   user: {
@@ -87,6 +87,11 @@ export const SIDEBAR_CONFIG_BY_ROLE: Record<RoleKey, SidebarConfig> = {
         title: "Dashboard",
         url: "/dashboard",
         icon: IconDashboard,
+      },
+      {
+        title: "Listings",
+        url: "/dashboard/listings",
+        icon: IconCamera,
       },
       {
         title: "My Tours",
@@ -160,5 +165,3 @@ export function getSidebarConfigForRole(role: UserRole | null): SidebarConfig {
   const key: RoleKey = role ?? "GUEST";
   return SIDEBAR_CONFIG_BY_ROLE[key];
 }
-
-

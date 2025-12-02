@@ -137,6 +137,22 @@ export function useTableQuery(options: UseTableQueryOptions = {}) {
     [updateParams],
   );
 
+  const clearAllFilters = useCallback(() => {
+    updateParams((params) => {
+      // Clear all filter keys
+      for (const key of filterKeys) {
+        params.delete(key);
+      }
+      // Clear search
+      params.delete("search");
+      // Clear sorting
+      params.delete("sortBy");
+      params.delete("sortOrder");
+      // Reset to first page
+      params.set("page", "1");
+    });
+  }, [updateParams, filterKeys]);
+
   return {
     query,
     setPage,
@@ -144,6 +160,7 @@ export function useTableQuery(options: UseTableQueryOptions = {}) {
     setSearch,
     setSort,
     setFilter,
+    clearAllFilters,
   };
 }
 

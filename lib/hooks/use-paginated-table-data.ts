@@ -68,7 +68,7 @@ export function usePaginatedTableData<T>(
         const queryString = params.toString();
         const fullPath = queryString ? `${path}?${queryString}` : path;
 
-        const response = await apiFetch<PaginatedResponse<T>>(fullPath, {
+        const response = await apiFetch<PaginatedResponse<T> | { success: boolean; data: { listings?: T[]; [key: string]: any }; meta?: PaginatedMeta }>(fullPath, {
           method: "GET",
           withCredentials,
           headers: {
@@ -76,7 +76,15 @@ export function usePaginatedTableData<T>(
           },
         });
 
-        setData(response.data || []);
+        // Handle both response formats: direct array or nested object
+        let dataArray: T[] = [];
+        if (Array.isArray(response.data)) {
+          dataArray = response.data;
+        } else if (response.data && typeof response.data === 'object' && 'listings' in response.data && Array.isArray(response.data.listings)) {
+          dataArray = response.data.listings;
+        }
+
+        setData(dataArray);
         if (response.meta) {
           setMeta(response.meta);
         } else {
@@ -84,7 +92,7 @@ export function usePaginatedTableData<T>(
           setMeta({
             page: query.page,
             limit: query.limit,
-            total: response.data?.length ?? 0,
+            total: dataArray.length,
             totalPage: 1,
           });
         }

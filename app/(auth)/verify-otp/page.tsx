@@ -1,13 +1,13 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
 import { toast } from "sonner";
 import { AuthLayout } from "../login/_components/AuthLayout";
 import { VerifyOTPForm } from "./_components/VerifyOTPForm";
 
-export default function VerifyOTPPage() {
+function VerifyOTPContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
@@ -54,5 +54,26 @@ export default function VerifyOTPPage() {
     >
       {email && <VerifyOTPForm email={email} />}
     </AuthLayout>
+  );
+}
+
+export default function VerifyOTPPage() {
+  return (
+    <Suspense
+      fallback={
+        <AuthLayout
+          imageSrc="/images/register-background.png"
+          imageAlt="Email verification"
+          title="Verify your email"
+          subtitle="Loading..."
+          imageTitle="Secure your account"
+          imageDescription="Email verification helps us ensure your account security and keep your information safe."
+        >
+          <div>Loading...</div>
+        </AuthLayout>
+      }
+    >
+      <VerifyOTPContent />
+    </Suspense>
   );
 }
