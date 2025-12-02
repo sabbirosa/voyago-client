@@ -36,6 +36,15 @@ type RegisterResponse = {
   };
 };
 
+type VerifyOTPResponse = {
+  success: boolean;
+  data: {
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: string;
+  };
+};
+
 type AuthContextValue = {
   user: AuthUser;
   isLoading: boolean;
@@ -43,6 +52,8 @@ type AuthContextValue = {
   role: UserRole;
   login: (payload: { email: string; password: string }) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<RegisterResponse["data"]>;
+  verifyOTP: (payload: { email: string; otp: string }) => Promise<void>;
+  resendOTP: (email: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -114,6 +125,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const verifyOTP = async (payload: { email: string; otp: string }) => {
+    setIsLoading(true);
+    try {
+      const response = await apiFetch<VerifyOTPResponse>("/auth/verify-otp", {
+        method: "POST",
+        body: payload,
+      });
+
+      const { accessToken, refreshToken } = response.data;
+      saveTokens({ accessToken, refreshToken });
+
+      // TODO: decode token or fetch `/auth/me` for real user info.
+      setUser({
+        id: "placeholder",
+        name: "Voyago User",
+        email: payload.email,
+        role: "TOURIST",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resendOTP = async (email: string) => {
+    setIsLoading(true);
+    try {
+      await apiFetch<{ success: boolean; message: string }>(
+        "/auth/resend-otp",
+        {
+          method: "POST",
+          body: { email },
+        }
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = async () => {
     clearTokens();
     setUser(null);
@@ -128,6 +177,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: user?.role ?? null,
         login,
         register,
+        verifyOTP,
+        resendOTP,
         logout,
       }}
     >

@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import {
   Select,
   SelectContent,
@@ -38,13 +39,16 @@ export default function RegisterPage() {
       name: "",
       email: "",
       password: "",
+      confirmPassword: "",
       role: "TOURIST",
     },
   });
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      const result = await registerUser(data);
+      // Exclude confirmPassword before sending to API
+      const { confirmPassword, ...registerData } = data;
+      const result = await registerUser(registerData);
       toast.success(
         "Registration successful! Please check your email for OTP verification."
       );
@@ -123,11 +127,29 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
+                      <PasswordInput
                         placeholder="••••••••"
                         {...field}
                         disabled={isLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <PasswordInput
+                        placeholder="••••••••"
+                        {...field}
+                        disabled={isLoading}
+                        showStrengthIndicator={false}
                       />
                     </FormControl>
                     <FormMessage />
