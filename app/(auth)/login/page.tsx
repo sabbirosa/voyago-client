@@ -17,6 +17,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
+import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/lib/auth/useAuth";
 import { loginSchema, type LoginFormData } from "@/lib/validation/auth";
 import { toast } from "sonner";
@@ -120,11 +122,11 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
+                      <PasswordInput
                         placeholder="••••••••"
                         {...field}
                         disabled={isLoading}
+                        showStrengthIndicator={false}
                       />
                     </FormControl>
                     <FormMessage />
@@ -147,7 +149,14 @@ export default function LoginPage() {
                 size="lg"
                 disabled={isLoading}
               >
-                {isLoading ? "Signing in..." : "Sign in"}
+                {isLoading ? (
+                  <>
+                    <Spinner className="mr-2" />
+                    Signing in
+                  </>
+                ) : (
+                  "Sign in"
+                )}
               </Button>
             </form>
           </Form>

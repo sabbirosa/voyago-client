@@ -22,11 +22,9 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/lib/auth/useAuth";
-import {
-  verifyOTPSchema,
-  type VerifyOTPFormData,
-} from "@/lib/validation/auth";
+import { verifyOTPSchema, type VerifyOTPFormData } from "@/lib/validation/auth";
 import { toast } from "sonner";
 
 export default function VerifyOTPPage() {
@@ -168,7 +166,14 @@ export default function VerifyOTPPage() {
                 size="lg"
                 disabled={isLoading || form.watch("otp").length !== 6}
               >
-                {isLoading ? "Verifying..." : "Verify Email"}
+                {isLoading ? (
+                  <>
+                    <Spinner className="mr-2" />
+                    Verifying
+                  </>
+                ) : (
+                  "Verify Email"
+                )}
               </Button>
             </form>
           </Form>
@@ -181,9 +186,10 @@ export default function VerifyOTPPage() {
                 type="button"
                 onClick={handleResendOTP}
                 disabled={isResending || !email}
-                className="font-medium text-primary hover:text-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="font-medium text-primary hover:text-primary/90 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1"
               >
-                {isResending ? "Resending..." : "Resend OTP"}
+                {isResending && <Spinner className="size-3" />}
+                {isResending ? "Resending" : "Resend OTP"}
               </button>
             </p>
           </div>
@@ -216,9 +222,7 @@ export default function VerifyOTPPage() {
           {/* Content overlay */}
           <div className="absolute inset-0 flex items-end p-12 text-white">
             <div className="max-w-md">
-              <h3 className="text-3xl font-bold mb-4">
-                Secure your account
-              </h3>
+              <h3 className="text-3xl font-bold mb-4">Secure your account</h3>
               <p className="text-lg opacity-90">
                 Email verification helps us ensure your account security and
                 keep your information safe.
@@ -230,4 +234,3 @@ export default function VerifyOTPPage() {
     </div>
   );
 }
-
