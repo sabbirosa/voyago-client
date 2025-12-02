@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
-type UserRole = "TOURIST" | "GUIDE" | "ADMIN" | null;
+export type UserRole = "TOURIST" | "GUIDE" | "ADMIN" | null;
 
 export type AuthUser = {
   id: string;
