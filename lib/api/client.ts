@@ -20,13 +20,19 @@ export async function apiFetch<TResponse>(
 
   const { method = "GET", body, headers, withCredentials } = options;
 
+  // Check if body is FormData - if so, don't set Content-Type and don't stringify
+  const isFormData = body instanceof FormData;
+  const requestHeaders = new Headers(headers || {});
+  
+  // Only set Content-Type for non-FormData requests
+  if (!isFormData && !requestHeaders.has("Content-Type")) {
+    requestHeaders.set("Content-Type", "application/json");
+  }
+
   const res = await fetch(url, {
     method,
-    headers: {
-      "Content-Type": "application/json",
-      ...(headers || {}),
-    },
-    body: body ? JSON.stringify(body) : undefined,
+    headers: requestHeaders,
+    body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
     credentials: withCredentials ? "include" : "same-origin",
   });
 

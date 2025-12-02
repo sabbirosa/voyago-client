@@ -1,6 +1,7 @@
 "use client";
 
-import { Spinner } from "@/components/ui/spinner";
+import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
+import { useSkeleton } from "@/components/dashboard/SkeletonContext";
 import type { UserRole } from "@/lib/auth/useAuth";
 import { useAuth } from "@/lib/auth/useAuth";
 import { useRouter } from "next/navigation";
@@ -15,6 +16,9 @@ interface RouteGuardProps {
 /**
  * Route Guard Component
  * Protects routes based on authentication and role requirements
+ *
+ * Pages can set their skeleton using the useSkeleton hook.
+ * The skeleton will be shown during authentication loading.
  */
 export function RouteGuard({
   children,
@@ -23,6 +27,7 @@ export function RouteGuard({
 }: RouteGuardProps) {
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const { skeleton } = useSkeleton();
 
   useEffect(() => {
     if (isLoading) return;
@@ -49,16 +54,9 @@ export function RouteGuard({
     }
   }, [isAuthenticated, user, isLoading, allowedRoles, redirectTo, router]);
 
-  // Show loading state
+  // Show loading state with skeleton
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Spinner className="size-8" />
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton>{skeleton}</DashboardSkeleton>;
   }
 
   // Show nothing while redirecting
