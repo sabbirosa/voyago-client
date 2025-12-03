@@ -51,6 +51,38 @@ export interface Listing {
   images: ListingImage[];
   createdAt: string;
   updatedAt: string;
+  guide?: {
+    id: string;
+    name: string;
+    email: string;
+    profile?: {
+      avatarUrl: string | null;
+      bio: string | null;
+      languages: string[];
+      city: string | null;
+      country: string | null;
+    };
+    guideProfile?: {
+      expertise: string[];
+      dailyRate: number | null;
+      experienceYears: number | null;
+      verificationStatus: string;
+    };
+  };
+  reviews?: Array<{
+    id: string;
+    rating: number;
+    title: string | null;
+    comment: string | null;
+    createdAt: string;
+    tourist: {
+      id: string;
+      name: string;
+      profile?: {
+        avatarUrl: string | null;
+      };
+    };
+  }>;
 }
 
 export interface CreateListingPayload {
@@ -141,7 +173,7 @@ export async function getListings(
   }
 
   const queryString = params.toString();
-  const path = queryString ? `/listings?${queryString}` : "/listings";
+  const path = queryString ? `/api/v1/listings?${queryString}` : "/api/v1/listings";
 
   return apiFetch<PaginatedListingsResponse>(path, {
     method: "GET",
@@ -152,7 +184,7 @@ export async function getListingById(listingId: string): Promise<Listing> {
   const response = await apiFetch<{
     success: boolean;
     data: { listing: Listing };
-  }>(`/listings/${listingId}`, {
+  }>(`/api/v1/listings/${listingId}`, {
     method: "GET",
   });
   return response.data.listing;
@@ -164,7 +196,7 @@ export async function createListing(
   const response = await apiFetch<{
     success: boolean;
     data: { listing: Listing };
-  }>("/listings", {
+  }>("/api/v1/listings", {
     method: "POST",
     headers: getAuthHeaders(),
     body: payload,
@@ -179,7 +211,7 @@ export async function updateListing(
   const response = await apiFetch<{
     success: boolean;
     data: { listing: Listing };
-  }>(`/listings/${listingId}`, {
+  }>(`/api/v1/listings/${listingId}`, {
     method: "PATCH",
     headers: getAuthHeaders(),
     body: payload,
@@ -188,7 +220,7 @@ export async function updateListing(
 }
 
 export async function deleteListing(listingId: string): Promise<void> {
-  await apiFetch(`/listings/${listingId}`, {
+  await apiFetch(`/api/v1/listings/${listingId}`, {
     method: "DELETE",
     headers: getAuthHeaders(),
   });
