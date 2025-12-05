@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { Logo } from "./Logo";
 import { ThemeButton } from "./theme-button";
 import { NotificationBell } from "@/components/notification/NotificationBell";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function Navbar() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -146,6 +147,7 @@ export function Navbar() {
               </DropdownMenu>
             </>
           ) : null}
+          <LanguageSwitcher />
           <ThemeButton />
         </div>
 
@@ -154,6 +156,7 @@ export function Navbar() {
           {isAuthenticated && user ? (
             <>
               <NotificationBell />
+              <LanguageSwitcher />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button

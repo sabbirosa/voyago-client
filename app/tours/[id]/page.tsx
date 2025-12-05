@@ -9,8 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MapPin, Clock, Users, Languages, Star } from "lucide-react";
+import { MapPin, Clock, Users, Languages, Star, Heart } from "lucide-react";
 import { toast } from "sonner";
+import { wishlistApi } from "@/lib/api/wishlist";
+import { useAuth } from "@/lib/auth/useAuth";
+import { useState, useEffect } from "react";
 
 export default function TourDetailsPage() {
   const params = useParams();
@@ -19,6 +22,9 @@ export default function TourDetailsPage() {
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     async function fetchListing() {
@@ -34,10 +40,48 @@ export default function TourDetailsPage() {
       }
     }
 
+    async function checkWishlist() {
+      if (isAuthenticated && listingId) {
+        try {
+          const response = await wishlistApi.checkWishlistStatus(listingId);
+          setIsInWishlist(response.data.isInWishlist);
+        } catch (err) {
+          // Silent fail for wishlist check
+        }
+      }
+    }
+
     if (listingId) {
       fetchListing();
+      checkWishlist();
     }
-  }, [listingId]);
+  }, [listingId, isAuthenticated]);
+
+  const handleWishlistToggle = async () => {
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+
+    if (!listingId) return;
+
+    try {
+      setWishlistLoading(true);
+      if (isInWishlist) {
+        await wishlistApi.removeFromWishlist(listingId);
+        setIsInWishlist(false);
+        toast.success("Removed from wishlist");
+      } else {
+        await wishlistApi.addToWishlist(listingId);
+        setIsInWishlist(true);
+        toast.success("Added to wishlist");
+      }
+    } catch (error) {
+      toast.error("Failed to update wishlist");
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -98,11 +142,25 @@ export default function TourDetailsPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* Title and Category */}
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Badge variant="secondary">{listing.category}</Badge>
-              <Badge variant="outline">
-                {listing.city}, {listing.country}
-              </Badge>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">{listing.category}</Badge>
+                <Badge variant="outline">
+                  {listing.city}, {listing.country}
+                </Badge>
+              </div>
+              {isAuthenticated && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleWishlistToggle}
+                  disabled={wishlistLoading}
+                >
+                  <Heart
+                    className={`h-5 w-5 ${isInWishlist ? "fill-red-500 text-red-500" : ""}`}
+                  />
+                </Button>
+              )}
             </div>
             <h1 className="text-3xl font-bold mb-4">{listing.title}</h1>
           </div>
