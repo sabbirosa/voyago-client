@@ -13,6 +13,18 @@ import { format } from "date-fns";
 import { CreditCard, ArrowLeft, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth/useAuth";
+import { ReviewForm } from "@/components/review/ReviewForm";
+import { MessageChat } from "@/components/message/MessageChat";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MessageSquare } from "lucide-react";
 
 const statusColors: Record<string, string> = {
   PENDING: "bg-yellow-500",
@@ -131,6 +143,16 @@ export default function BookingDetailPage() {
         </Button>
       </div>
 
+      <Tabs defaultValue="details" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="messages">
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Messages
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="details" className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
@@ -304,10 +326,39 @@ export default function BookingDetailPage() {
                   </Button>
                 </>
               )}
+              {isTourist && booking.status === "COMPLETED" && !booking.review && (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="w-full" variant="outline">
+                      Write Review
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Write a Review</DialogTitle>
+                      <DialogDescription>
+                        Share your experience with this tour
+                      </DialogDescription>
+                    </DialogHeader>
+                    <ReviewForm
+                      bookingId={booking.id}
+                      onSuccess={() => {
+                        fetchBooking();
+                      }}
+                    />
+                  </DialogContent>
+                </Dialog>
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
+        </TabsContent>
+
+        <TabsContent value="messages">
+          <MessageChat bookingId={booking.id} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

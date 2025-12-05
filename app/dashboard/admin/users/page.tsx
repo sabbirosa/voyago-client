@@ -1,0 +1,302 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { adminApi, AdminUser } from "@/lib/api/admin";
+import { DataTableCommon } from "@/components/common/data-table";
+import { PageHeader } from "@/components/dashboard/PageHeader";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ColumnDef } from "@tanstack/react-table";
+import { Ban, CheckCircle, XCircle, Shield, User as UserIcon, UserCheck } from "lucide-react";
+import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+
+export default function AdminUsersPage() {
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [filters, setFilters] = useState({
+    role: "",
+    isBanned: "",
+    isApproved: "",
+    search: "",
+  });
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [updateData, setUpdateData] = useState({
+    isBanned: false,
+    isApproved: true,
+    role: "TOURIST" as "TOURIST" | "GUIDE" | "ADMIN",
+  });
+
+  useEffect(() => {
+    fetchUsers();
+  }, [page, filters]);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const params: any = { page, limit: 10 };
+      if (filters.role) params.role = filters.role;
+      if (filters.isBanned !== "") params.isBanned = filters.isBanned === "true";
+      if (filters.isApproved !== "") params.isApproved = filters.isApproved === "true";
+      if (filters.search) params.search = filters.search;
+
+      const response = await adminApi.getUsers(params);
+      setUsers(response.data.users);
+      setTotal(response.meta?.total || 0);
+    } catch (error) {
+      toast.error("Failed to load users");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (user: AdminUser) => {
+    setSelectedUser(user);
+    setUpdateData({
+      isBanned: user.isBanned,
+      isApproved: user.isApproved,
+      role: user.role,
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdate = async () => {
+    if (!selectedUser) return;
+
+    try {
+      await adminApi.updateUser(selectedUser.id, updateData);
+      toast.success("User updated successfully");
+      setEditDialogOpen(false);
+      setSelectedUser(null);
+      fetchUsers();
+    } catch (error) {
+      toast.error("Failed to update user");
+    }
+  };
+
+  const columns: ColumnDef<AdminUser>[] = [
+    {
+      accessorKey: "name",
+      header: "Name",
+      cell: ({ row }) => (
+        <div>
+          <div className="font-medium">{row.original.name}</div>
+          <div className="text-sm text-muted-foreground">{row.original.email}</div>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "role",
+      header: "Role",
+      cell: ({ row }) => {
+        const role = row.original.role;
+        const roleColors: Record<string, string> = {
+          ADMIN: "bg-purple-500",
+          GUIDE: "bg-blue-500",
+          TOURIST: "bg-green-500",
+        };
+        return (
+          <Badge className={roleColors[role] || "bg-gray-500"}>
+            {role}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "isApproved",
+      header: "Status",
+      cell: ({ row }) => {
+        const user = row.original;
+        return (
+          <div className="flex gap-2">
+            {user.isApproved ? (
+              <Badge variant="default" className="bg-green-500">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Approved
+              </Badge>
+            ) : (
+              <Badge variant="secondary">
+                <XCircle className="h-3 w-3 mr-1" />
+                Pending
+              </Badge>
+            )}
+            {user.isBanned && (
+              <Badge variant="destructive">
+                <Ban className="h-3 w-3 mr-1" />
+                Banned
+              </Badge>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Joined",
+      cell: ({ row }) => new Date(row.original.createdAt).toLocaleDateString(),
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleEdit(row.original)}
+        >
+          Edit
+        </Button>
+      ),
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="User Management"
+        description="Manage users, roles, and account status"
+      />
+
+      {/* Filters */}
+      <div className="flex gap-4 items-end">
+        <div className="flex-1">
+          <Label>Search</Label>
+          <Input
+            placeholder="Search by name or email..."
+            value={filters.search}
+            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+          />
+        </div>
+        <div>
+          <Label>Role</Label>
+          <Select
+            value={filters.role}
+            onValueChange={(value) => setFilters({ ...filters, role: value })}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All roles" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All roles</SelectItem>
+              <SelectItem value="TOURIST">Tourist</SelectItem>
+              <SelectItem value="GUIDE">Guide</SelectItem>
+              <SelectItem value="ADMIN">Admin</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Status</Label>
+          <Select
+            value={filters.isBanned}
+            onValueChange={(value) => setFilters({ ...filters, isBanned: value })}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All status</SelectItem>
+              <SelectItem value="false">Active</SelectItem>
+              <SelectItem value="true">Banned</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <DataTableCommon
+        columns={columns}
+        data={users}
+        isLoading={loading}
+        total={total}
+        page={page}
+        pageSize={10}
+        onPageChange={setPage}
+        onPageSizeChange={() => {}}
+      />
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>
+              Update user permissions and status
+            </DialogDescription>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium">{selectedUser.name}</Label>
+                <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="isBanned">Banned</Label>
+                <Switch
+                  id="isBanned"
+                  checked={updateData.isBanned}
+                  onCheckedChange={(checked) =>
+                    setUpdateData({ ...updateData, isBanned: checked })
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="isApproved">Approved</Label>
+                <Switch
+                  id="isApproved"
+                  checked={updateData.isApproved}
+                  onCheckedChange={(checked) =>
+                    setUpdateData({ ...updateData, isApproved: checked })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="role">Role</Label>
+                <Select
+                  value={updateData.role}
+                  onValueChange={(value: "TOURIST" | "GUIDE" | "ADMIN") =>
+                    setUpdateData({ ...updateData, role: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="TOURIST">Tourist</SelectItem>
+                    <SelectItem value="GUIDE">Guide</SelectItem>
+                    <SelectItem value="ADMIN">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdate}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+

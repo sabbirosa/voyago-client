@@ -1,4 +1,5 @@
 import {
+  IconCalendar,
   IconCamera,
   IconChartBar,
   IconDashboard,
@@ -79,7 +80,26 @@ const baseConfig: SidebarConfig = {
 
 export const SIDEBAR_CONFIG_BY_ROLE: Record<RoleKey, SidebarConfig> = {
   GUEST: baseConfig,
-  TOURIST: baseConfig,
+  TOURIST: {
+    ...baseConfig,
+    navMain: [
+      {
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: IconDashboard,
+      },
+      {
+        title: "My Bookings",
+        url: "/dashboard/tourist/bookings",
+        icon: IconFolder,
+      },
+      {
+        title: "Explore",
+        url: "/explore",
+        icon: IconChartBar,
+      },
+    ],
+  },
   GUIDE: {
     ...baseConfig,
     navMain: [
@@ -94,14 +114,14 @@ export const SIDEBAR_CONFIG_BY_ROLE: Record<RoleKey, SidebarConfig> = {
         icon: IconCamera,
       },
       {
-        title: "My Tours",
-        url: "/dashboard/tours",
-        icon: IconCamera,
+        title: "Bookings",
+        url: "/dashboard/guide/bookings",
+        icon: IconFolder,
       },
       {
-        title: "Clients",
-        url: "/dashboard/clients",
-        icon: IconUsers,
+        title: "Availability",
+        url: "/dashboard/guide/availability",
+        icon: IconCalendar,
       },
     ],
     documents: [
@@ -132,30 +152,25 @@ export const SIDEBAR_CONFIG_BY_ROLE: Record<RoleKey, SidebarConfig> = {
       },
       {
         title: "Users",
-        url: "/dashboard/users",
+        url: "/dashboard/admin/users",
         icon: IconUsers,
       },
       {
-        title: "Analytics",
-        url: "/dashboard/analytics",
-        icon: IconChartBar,
+        title: "Listings",
+        url: "/dashboard/admin/listings",
+        icon: IconFileDescription,
       },
       {
-        title: "System",
-        url: "/dashboard/system",
-        icon: IconDatabase,
+        title: "Analytics",
+        url: "/dashboard/admin/analytics",
+        icon: IconChartBar,
       },
     ],
     documents: [
       {
         name: "Reports",
-        url: "/dashboard/reports",
+        url: "/dashboard/admin/reports",
         icon: IconReport,
-      },
-      {
-        name: "Data Library",
-        url: "/dashboard/data",
-        icon: IconDatabase,
       },
     ],
   },
