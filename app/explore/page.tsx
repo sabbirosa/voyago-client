@@ -28,7 +28,7 @@ function ExploreContent() {
   
   // Filter states
   const [search, setSearch] = useState(searchParams.get("search") || "");
-  const [category, setCategory] = useState<string>(searchParams.get("category") || "");
+  const [category, setCategory] = useState<string>(searchParams.get("category") || "all");
   const [city, setCity] = useState(searchParams.get("city") || "");
   const [country, setCountry] = useState(searchParams.get("country") || "");
   const [minPrice, setMinPrice] = useState("");
@@ -48,7 +48,7 @@ function ExploreContent() {
         };
 
         if (search) query.search = search;
-        if (category) query.category = category as any;
+        if (category && category !== "all") query.category = category as any;
         if (city) query.city = city;
         if (country) query.country = country;
         if (minPrice) query.minPrice = parseFloat(minPrice);
@@ -77,7 +77,7 @@ function ExploreContent() {
 
   const clearFilters = () => {
     setSearch("");
-    setCategory("");
+    setCategory("all");
     setCity("");
     setCountry("");
     setMinPrice("");
@@ -131,7 +131,7 @@ function ExploreContent() {
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Categories</SelectItem>
+                    <SelectItem value="all">All Categories</SelectItem>
                     {listingCategoryOptions.map((cat) => (
                       <SelectItem key={cat} value={cat}>
                         {cat.replace(/_/g, " ")}

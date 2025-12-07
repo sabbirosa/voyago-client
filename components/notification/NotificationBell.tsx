@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Bell } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -9,37 +8,51 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { notificationApi, Notification } from "@/lib/api/notification";
-import { format } from "date-fns";
-import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Notification, notificationApi } from "@/lib/api/notification";
+import { useAuth } from "@/lib/auth/useAuth";
+import { format } from "date-fns";
+import { Bell } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export function NotificationBell() {
+  const { isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    fetchUnreadCount();
-    if (open) {
-      fetchNotifications();
+    if (isAuthenticated) {
+      fetchUnreadCount();
+      if (open) {
+        fetchNotifications();
+      }
     }
-  }, [open]);
+  }, [open, isAuthenticated]);
 
-  // Poll for unread count every 30 seconds
+  // Poll for unread count every 30 seconds (only if authenticated)
   useEffect(() => {
+    if (!isAuthenticated) return;
     const interval = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isAuthenticated]);
 
   const fetchUnreadCount = async () => {
+    if (!isAuthenticated) return;
     try {
       const response = await notificationApi.getUnreadCount();
       setUnreadCount(response.data.count);
-    } catch (error) {
-      // Silently fail - notifications are not critical
+    } catch (error: any) {
+      // Silently fail for 401 (unauthorized) - user might not be logged in
+      // For other errors, also fail silently as notifications are not critical
+      if (
+        error?.message?.includes("401") ||
+        error?.message?.includes("Unauthorized")
+      ) {
+        setUnreadCount(0);
+      }
     }
   };
 
@@ -59,7 +72,9 @@ export function NotificationBell() {
     try {
       await notificationApi.markAsRead(id);
       setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n))
+        prev.map((n) =>
+          n.id === id ? { ...n, readAt: new Date().toISOString() } : n
+        )
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
@@ -136,12 +151,17 @@ export function NotificationBell() {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
-                      <p className="font-medium text-sm">{notification.title}</p>
+                      <p className="font-medium text-sm">
+                        {notification.title}
+                      </p>
                       <p className="text-xs text-muted-foreground mt-1">
                         {notification.message}
                       </p>
                       <p className="text-xs text-muted-foreground mt-2">
-                        {format(new Date(notification.createdAt), "MMM dd, h:mm a")}
+                        {format(
+                          new Date(notification.createdAt),
+                          "MMM dd, h:mm a"
+                        )}
                       </p>
                     </div>
                     {!notification.readAt && (
@@ -157,5 +177,3 @@ export function NotificationBell() {
     </Popover>
   );
 }
-
-

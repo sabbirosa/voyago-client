@@ -34,7 +34,7 @@ export default function AdminListingsPage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState({
-    status: "",
+    status: "all",
     search: "",
   });
 
@@ -46,7 +46,7 @@ export default function AdminListingsPage() {
     try {
       setLoading(true);
       const params: any = { page, limit: 10 };
-      if (filters.status) params.status = filters.status;
+      if (filters.status && filters.status !== "all") params.status = filters.status;
       if (filters.search) params.search = filters.search;
 
       const response = await adminApi.getListings(params);
@@ -201,7 +201,7 @@ export default function AdminListingsPage() {
               <SelectValue placeholder="All status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All status</SelectItem>
+              <SelectItem value="all">All status</SelectItem>
               <SelectItem value="DRAFT">Draft</SelectItem>
               <SelectItem value="ACTIVE">Active</SelectItem>
               <SelectItem value="INACTIVE">Inactive</SelectItem>

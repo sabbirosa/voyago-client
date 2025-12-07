@@ -34,9 +34,9 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState({
-    role: "",
-    isBanned: "",
-    isApproved: "",
+    role: "all",
+    isBanned: "all",
+    isApproved: "all",
     search: "",
   });
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
@@ -55,9 +55,9 @@ export default function AdminUsersPage() {
     try {
       setLoading(true);
       const params: any = { page, limit: 10 };
-      if (filters.role) params.role = filters.role;
-      if (filters.isBanned !== "") params.isBanned = filters.isBanned === "true";
-      if (filters.isApproved !== "") params.isApproved = filters.isApproved === "true";
+      if (filters.role && filters.role !== "all") params.role = filters.role;
+      if (filters.isBanned !== "all") params.isBanned = filters.isBanned === "true";
+      if (filters.isApproved !== "all") params.isApproved = filters.isApproved === "true";
       if (filters.search) params.search = filters.search;
 
       const response = await adminApi.getUsers(params);
@@ -197,7 +197,7 @@ export default function AdminUsersPage() {
               <SelectValue placeholder="All roles" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All roles</SelectItem>
+              <SelectItem value="all">All roles</SelectItem>
               <SelectItem value="TOURIST">Tourist</SelectItem>
               <SelectItem value="GUIDE">Guide</SelectItem>
               <SelectItem value="ADMIN">Admin</SelectItem>
@@ -214,7 +214,7 @@ export default function AdminUsersPage() {
               <SelectValue placeholder="All status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All status</SelectItem>
+              <SelectItem value="all">All status</SelectItem>
               <SelectItem value="false">Active</SelectItem>
               <SelectItem value="true">Banned</SelectItem>
             </SelectContent>
