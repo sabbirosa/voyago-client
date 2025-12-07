@@ -183,7 +183,7 @@ export default function AdminListingsPage() {
 
       {/* Filters */}
       <div className="flex gap-4 items-end">
-        <div className="flex-1">
+        <div className="flex-1 space-y-2">
           <Label>Search</Label>
           <Input
             placeholder="Search listings..."
@@ -191,7 +191,7 @@ export default function AdminListingsPage() {
             onChange={(e) => setFilters({ ...filters, search: e.target.value })}
           />
         </div>
-        <div>
+        <div className="space-y-2">
           <Label>Status</Label>
           <Select
             value={filters.status}

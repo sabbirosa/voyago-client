@@ -1,9 +1,7 @@
 "use client";
 
 import { DataTableCommon } from "@/components/common/data-table";
-import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { PageHeader } from "@/components/dashboard/PageHeader";
-import { SiteHeader } from "@/components/dashboard/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { deleteListing, type Listing } from "@/lib/api/listing";
 import { useAuth } from "@/lib/auth/useAuth";
 import { usePaginatedTableData } from "@/lib/hooks/use-paginated-table-data";
@@ -39,7 +36,6 @@ import {
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Plus, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ListingForm } from "./_components/ListingForm";
@@ -217,22 +213,9 @@ export default function ListingsPage() {
   // Show loading state while auth is loading
   if (authLoading) {
     return (
-      <SidebarProvider
-        style={
-          {
-            "--sidebar-width": "calc(var(--spacing) * 72)",
-            "--header-height": "calc(var(--spacing) * 12)",
-          } as CSSProperties
-        }
-      >
-        <AppSidebar variant="inset" />
-        <SidebarInset>
-          <SiteHeader />
-          <div className="flex flex-1 flex-col items-center justify-center">
-            <div className="text-muted-foreground">Loading...</div>
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
+      <div className="flex items-center justify-center py-12">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
     );
   }
 
@@ -242,28 +225,13 @@ export default function ListingsPage() {
   }
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <div className="px-4 lg:px-6">
-                <PageHeader
-                  title="Listings"
-                  description="Manage your tour listings"
-                />
-              </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Listings"
+        description="Manage your tour listings"
+      />
 
-              <div className="px-4 lg:px-6">
+      <div>
                 <Card>
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -375,11 +343,7 @@ export default function ListingsPage() {
                     />
                   </CardContent>
                 </Card>
-              </div>
-            </div>
-          </div>
-        </div>
-      </SidebarInset>
+      </div>
 
       {/* Create Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -418,6 +382,6 @@ export default function ListingsPage() {
           )}
         </DialogContent>
       </Dialog>
-    </SidebarProvider>
+    </div>
   );
 }

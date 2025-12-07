@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { adminApi, AdminUser } from "@/lib/api/admin";
 import { DataTableCommon } from "@/components/common/data-table";
 import { PageHeader } from "@/components/dashboard/PageHeader";
@@ -39,6 +39,7 @@ export default function AdminUsersPage() {
     isApproved: "all",
     search: "",
   });
+  const [searchInput, setSearchInput] = useState("");
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [updateData, setUpdateData] = useState({
@@ -46,6 +47,20 @@ export default function AdminUsersPage() {
     isApproved: true,
     role: "TOURIST" as "TOURIST" | "GUIDE" | "ADMIN",
   });
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFilters((prev) => {
+        if (prev.search !== searchInput) {
+          setPage(1); // Reset to first page when search changes
+        }
+        return { ...prev, search: searchInput };
+      });
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   useEffect(() => {
     fetchUsers();
@@ -61,10 +76,14 @@ export default function AdminUsersPage() {
       if (filters.search) params.search = filters.search;
 
       const response = await adminApi.getUsers(params);
-      setUsers(response.data.users);
+      setUsers(response.data.users || []);
       setTotal(response.meta?.total || 0);
-    } catch (error) {
-      toast.error("Failed to load users");
+    } catch (error: any) {
+      console.error("Failed to load users:", error);
+      const errorMessage = error?.message || "Failed to load users";
+      toast.error(errorMessage);
+      setUsers([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
@@ -179,19 +198,22 @@ export default function AdminUsersPage() {
 
       {/* Filters */}
       <div className="flex gap-4 items-end">
-        <div className="flex-1">
+        <div className="flex-1 space-y-2">
           <Label>Search</Label>
           <Input
             placeholder="Search by name or email..."
-            value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
           />
         </div>
-        <div>
+        <div className="space-y-2">
           <Label>Role</Label>
           <Select
             value={filters.role}
-            onValueChange={(value) => setFilters({ ...filters, role: value })}
+            onValueChange={(value) => {
+              setPage(1);
+              setFilters({ ...filters, role: value });
+            }}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="All roles" />
@@ -204,11 +226,14 @@ export default function AdminUsersPage() {
             </SelectContent>
           </Select>
         </div>
-        <div>
+        <div className="space-y-2">
           <Label>Status</Label>
           <Select
             value={filters.isBanned}
-            onValueChange={(value) => setFilters({ ...filters, isBanned: value })}
+            onValueChange={(value) => {
+              setPage(1);
+              setFilters({ ...filters, isBanned: value });
+            }}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="All status" />

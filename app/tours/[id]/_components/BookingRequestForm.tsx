@@ -1,17 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Listing } from "@/lib/api/listing";
-import { bookingApi } from "@/lib/api/booking";
-import { createBookingSchema, CreateBookingFormData } from "@/lib/validation/booking";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -20,9 +10,21 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { bookingApi } from "@/lib/api/booking";
+import { Listing } from "@/lib/api/listing";
 import { useAuth } from "@/lib/auth/useAuth";
-import { toast } from "sonner";
+import {
+  CreateBookingFormData,
+  createBookingSchema,
+} from "@/lib/validation/booking";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { DollarSign } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 interface BookingRequestFormProps {
   listing: Listing;
@@ -120,7 +122,9 @@ export function BookingRequestForm({ listing }: BookingRequestFormProps) {
                   <DollarSign className="h-4 w-4" />
                   Total
                 </span>
-                <span className="text-lg font-bold">${totalPrice.toFixed(2)}</span>
+                <span className="text-lg font-bold">
+                  ${totalPrice.toFixed(2)}
+                </span>
               </div>
             </div>
 
@@ -171,7 +175,9 @@ export function BookingRequestForm({ listing }: BookingRequestFormProps) {
                         {...field}
                         onChange={(e) => {
                           const value = parseInt(e.target.value) || 1;
-                          field.onChange(Math.min(listing.maxGroupSize, Math.max(1, value)));
+                          field.onChange(
+                            Math.min(listing.maxGroupSize, Math.max(1, value))
+                          );
                         }}
                       />
                       <Button
@@ -226,4 +232,3 @@ export function BookingRequestForm({ listing }: BookingRequestFormProps) {
     </Card>
   );
 }
-

@@ -60,7 +60,7 @@ const baseConfig: SidebarConfig = {
     },
     {
       title: "Explore",
-      url: "/dashboard/explore",
+      url: "/explore",
       icon: IconChartBar,
     },
   ],

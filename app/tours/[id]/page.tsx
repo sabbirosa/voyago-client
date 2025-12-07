@@ -1,18 +1,18 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { getListingById, Listing } from "@/lib/api/listing";
-import { BookingRequestForm } from "./_components/BookingRequestForm";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Clock, Users, Languages, Star, Heart } from "lucide-react";
-import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getListingById, Listing } from "@/lib/api/listing";
 import { wishlistApi } from "@/lib/api/wishlist";
 import { useAuth } from "@/lib/auth/useAuth";
+import { Clock, Heart, Languages, MapPin, Star, Users } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { BookingRequestForm } from "./_components/BookingRequestForm";
 
 export default function TourDetailsPage() {
   const params = useParams();
@@ -124,7 +124,7 @@ export default function TourDetailsPage() {
   const guide = listing.guide;
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 mt-12">
       {/* Hero Section with Image */}
       {mainImage && (
         <div className="relative h-96 w-full rounded-lg overflow-hidden mb-6">
@@ -156,7 +156,9 @@ export default function TourDetailsPage() {
                   disabled={wishlistLoading}
                 >
                   <Heart
-                    className={`h-5 w-5 ${isInWishlist ? "fill-red-500 text-red-500" : ""}`}
+                    className={`h-5 w-5 ${
+                      isInWishlist ? "fill-red-500 text-red-500" : ""
+                    }`}
                   />
                 </Button>
               )}
@@ -184,7 +186,8 @@ export default function TourDetailsPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-semibold">{guide.name}</h3>
-                      {guide.guideProfile?.verificationStatus === "VERIFIED" && (
+                      {guide.guideProfile?.verificationStatus ===
+                        "VERIFIED" && (
                         <Badge variant="default" className="text-xs">
                           Verified
                         </Badge>
@@ -199,16 +202,23 @@ export default function TourDetailsPage() {
                       <div className="flex flex-wrap gap-2 text-sm">
                         {guide.guideProfile.expertise.length > 0 && (
                           <div className="flex flex-wrap gap-1">
-                            {guide.guideProfile.expertise.slice(0, 3).map((exp) => (
-                              <Badge key={exp} variant="outline" className="text-xs">
-                                {exp}
-                              </Badge>
-                            ))}
+                            {guide.guideProfile.expertise
+                              .slice(0, 3)
+                              .map((exp) => (
+                                <Badge
+                                  key={exp}
+                                  variant="outline"
+                                  className="text-xs"
+                                >
+                                  {exp}
+                                </Badge>
+                              ))}
                           </div>
                         )}
                         {guide.guideProfile.experienceYears && (
                           <span className="text-muted-foreground">
-                            {guide.guideProfile.experienceYears} years experience
+                            {guide.guideProfile.experienceYears} years
+                            experience
                           </span>
                         )}
                       </div>
@@ -279,7 +289,10 @@ export default function TourDetailsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {listing.reviews.map((review) => (
-                  <div key={review.id} className="border-b last:border-0 pb-4 last:pb-0">
+                  <div
+                    key={review.id}
+                    className="border-b last:border-0 pb-4 last:pb-0"
+                  >
                     <div className="flex items-start gap-3">
                       <Avatar>
                         <AvatarImage
@@ -291,7 +304,9 @@ export default function TourDetailsPage() {
                       </Avatar>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="font-semibold">{review.tourist.name}</span>
+                          <span className="font-semibold">
+                            {review.tourist.name}
+                          </span>
                           <div className="flex items-center gap-1">
                             {Array.from({ length: 5 }).map((_, i) => (
                               <Star
@@ -332,4 +347,3 @@ export default function TourDetailsPage() {
     </div>
   );
 }
-

@@ -1,4 +1,15 @@
 import { apiFetch } from "./client";
+import { getTokens } from "../auth/tokenStorage";
+
+function getAuthHeaders(): HeadersInit {
+  const tokens = getTokens();
+  if (!tokens) {
+    throw new Error("Not authenticated");
+  }
+  return {
+    Authorization: `Bearer ${tokens.accessToken}`,
+  };
+}
 
 export interface AdminUser {
   id: string;
@@ -114,6 +125,7 @@ export const adminApi = {
       `/admin/users${queryString ? `?${queryString}` : ""}`,
       {
         method: "GET",
+        headers: getAuthHeaders(),
         withCredentials: true,
       }
     );
@@ -129,6 +141,7 @@ export const adminApi = {
   ): Promise<{ success: boolean; data: { user: AdminUser } }> => {
     return apiFetch(`/admin/users/${id}`, {
       method: "PATCH",
+      headers: getAuthHeaders(),
       body: payload,
       withCredentials: true,
     });
@@ -153,6 +166,7 @@ export const adminApi = {
       `/admin/listings${queryString ? `?${queryString}` : ""}`,
       {
         method: "GET",
+        headers: getAuthHeaders(),
         withCredentials: true,
       }
     );
@@ -164,6 +178,7 @@ export const adminApi = {
   ): Promise<{ success: boolean; data: { listing: AdminListing } }> => {
     return apiFetch(`/admin/listings/${id}`, {
       method: "PATCH",
+      headers: getAuthHeaders(),
       body: payload,
       withCredentials: true,
     });
@@ -172,6 +187,7 @@ export const adminApi = {
   getAnalytics: async (): Promise<AnalyticsResponse> => {
     return apiFetch<AnalyticsResponse>("/admin/analytics", {
       method: "GET",
+      headers: getAuthHeaders(),
       withCredentials: true,
     });
   },
