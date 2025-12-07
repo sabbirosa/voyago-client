@@ -53,8 +53,10 @@ export interface ReviewResponse {
 }
 
 export const reviewApi = {
-  createReview: async (payload: CreateReviewPayload): Promise<ReviewResponse> => {
-    return apiFetch<ReviewResponse>("/api/v1/reviews", {
+  createReview: async (
+    payload: CreateReviewPayload
+  ): Promise<ReviewResponse> => {
+    return apiFetch<ReviewResponse>("/reviews", {
       method: "POST",
       body: payload,
       withCredentials: true,
@@ -74,11 +76,10 @@ export const reviewApi = {
 
     const queryString = queryParams.toString();
     return apiFetch<ReviewsResponse>(
-      `/api/v1/reviews/listings/${listingId}${queryString ? `?${queryString}` : ""}`,
+      `/reviews/listings/${listingId}${queryString ? `?${queryString}` : ""}`,
       {
         method: "GET",
       }
     );
   },
 };
-

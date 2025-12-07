@@ -20,11 +20,17 @@ if (!parsedClientEnv.success) {
 }
 
 const rawApiUrl = parsedClientEnv.data.NEXT_PUBLIC_API_URL.replace(/\/+$/, "");
+// Ensure /api/v1 is included in the base URL
+const normalizedApiUrl = rawApiUrl.endsWith("/api/v1")
+  ? rawApiUrl
+  : rawApiUrl.endsWith("/api")
+  ? `${rawApiUrl}/v1`
+  : `${rawApiUrl}/api/v1`;
 
 export const clientEnv = {
   /**
-   * Base URL for the Voyago API (must include protocol and optional path prefix).
+   * Base URL for the Voyago API (includes /api/v1).
    * Example: "http://localhost:5000/api/v1" or "https://api.voyago.com/api/v1"
    */
-  apiUrl: rawApiUrl,
+  apiUrl: normalizedApiUrl,
 } as const;

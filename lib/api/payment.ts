@@ -28,17 +28,16 @@ export interface PaymentResponse {
 
 export const paymentApi = {
   createPaymentSession: async (bookingId: string): Promise<PaymentResponse> => {
-    return apiFetch<PaymentResponse>(`/api/v1/payments/booking/${bookingId}`, {
+    return apiFetch<PaymentResponse>(`/payments/booking/${bookingId}`, {
       method: "POST",
       withCredentials: true,
     });
   },
 
   getPaymentByBooking: async (bookingId: string): Promise<PaymentResponse> => {
-    return apiFetch<PaymentResponse>(`/api/v1/payments/booking/${bookingId}`, {
+    return apiFetch<PaymentResponse>(`/payments/booking/${bookingId}`, {
       method: "GET",
       withCredentials: true,
     });
   },
 };
-

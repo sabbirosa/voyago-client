@@ -10,7 +10,13 @@ export interface Booking {
   totalPrice: number;
   platformFee: number;
   note: string | null;
-  status: "PENDING" | "ACCEPTED" | "DECLINED" | "PAID" | "COMPLETED" | "CANCELLED";
+  status:
+    | "PENDING"
+    | "ACCEPTED"
+    | "DECLINED"
+    | "PAID"
+    | "COMPLETED"
+    | "CANCELLED";
   cancelledAt: string | null;
   cancelReason: string | null;
   createdAt: string;
@@ -88,8 +94,10 @@ export interface BookingResponse {
 }
 
 export const bookingApi = {
-  createBooking: async (payload: CreateBookingPayload): Promise<BookingResponse> => {
-    return apiFetch<BookingResponse>("/api/v1/bookings", {
+  createBooking: async (
+    payload: CreateBookingPayload
+  ): Promise<BookingResponse> => {
+    return apiFetch<BookingResponse>("/bookings", {
       method: "POST",
       body: payload,
       withCredentials: true,
@@ -106,15 +114,17 @@ export const bookingApi = {
   }): Promise<BookingsResponse> => {
     const queryParams = new URLSearchParams();
     if (params?.status) queryParams.append("status", params.status);
-    if (params?.upcoming !== undefined) queryParams.append("upcoming", String(params.upcoming));
-    if (params?.past !== undefined) queryParams.append("past", String(params.past));
+    if (params?.upcoming !== undefined)
+      queryParams.append("upcoming", String(params.upcoming));
+    if (params?.past !== undefined)
+      queryParams.append("past", String(params.past));
     if (params?.page) queryParams.append("page", String(params.page));
     if (params?.limit) queryParams.append("limit", String(params.limit));
     if (params?.sort) queryParams.append("sort", params.sort);
 
     const queryString = queryParams.toString();
     return apiFetch<BookingsResponse>(
-      `/api/v1/bookings/me${queryString ? `?${queryString}` : ""}`,
+      `/bookings/me${queryString ? `?${queryString}` : ""}`,
       {
         method: "GET",
         withCredentials: true,
@@ -123,7 +133,7 @@ export const bookingApi = {
   },
 
   getBookingById: async (id: string): Promise<BookingResponse> => {
-    return apiFetch<BookingResponse>(`/api/v1/bookings/${id}`, {
+    return apiFetch<BookingResponse>(`/bookings/${id}`, {
       method: "GET",
       withCredentials: true,
     });
@@ -133,11 +143,10 @@ export const bookingApi = {
     id: string,
     payload: UpdateBookingStatusPayload
   ): Promise<BookingResponse> => {
-    return apiFetch<BookingResponse>(`/api/v1/bookings/${id}/status`, {
+    return apiFetch<BookingResponse>(`/bookings/${id}/status`, {
       method: "PATCH",
       body: payload,
       withCredentials: true,
     });
   },
 };
-

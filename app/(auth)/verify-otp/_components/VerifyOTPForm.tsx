@@ -50,12 +50,22 @@ export function VerifyOTPForm({ email }: VerifyOTPFormProps) {
 
   const onSubmit = async (data: VerifyOTPFormData) => {
     try {
-      await verifyOTP(data);
-      toast.success("Email verified successfully! Redirecting...");
-      // Redirect to login or dashboard
-      setTimeout(() => {
-        router.push("/login");
-      }, 1500);
+      const result = await verifyOTP(data);
+      
+      if (result.needsApproval) {
+        // Show success message for approval pending
+        toast.success(result.message || "Email verified! Your account is pending approval.");
+        // Redirect to login after a delay
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      } else {
+        // Normal success flow
+        toast.success("Email verified successfully! Redirecting...");
+        setTimeout(() => {
+          router.push("/login");
+        }, 1500);
+      }
     } catch (error) {
       const errorMessage =
         error instanceof Error

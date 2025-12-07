@@ -1,7 +1,7 @@
 "use client";
 
-import { apiFetch } from "./client";
 import { getTokens } from "../auth/tokenStorage";
+import { apiFetch } from "./client";
 
 export type ListingStatus = "DRAFT" | "ACTIVE" | "INACTIVE" | "BLOCKED";
 export type ListingCategory =
@@ -173,7 +173,7 @@ export async function getListings(
   }
 
   const queryString = params.toString();
-  const path = queryString ? `/api/v1/listings?${queryString}` : "/api/v1/listings";
+  const path = queryString ? `/listings?${queryString}` : "/listings";
 
   return apiFetch<PaginatedListingsResponse>(path, {
     method: "GET",
@@ -184,7 +184,7 @@ export async function getListingById(listingId: string): Promise<Listing> {
   const response = await apiFetch<{
     success: boolean;
     data: { listing: Listing };
-  }>(`/api/v1/listings/${listingId}`, {
+  }>(`/listings/${listingId}`, {
     method: "GET",
   });
   return response.data.listing;
@@ -196,7 +196,7 @@ export async function createListing(
   const response = await apiFetch<{
     success: boolean;
     data: { listing: Listing };
-  }>("/api/v1/listings", {
+  }>("/listings", {
     method: "POST",
     headers: getAuthHeaders(),
     body: payload,
@@ -211,7 +211,7 @@ export async function updateListing(
   const response = await apiFetch<{
     success: boolean;
     data: { listing: Listing };
-  }>(`/api/v1/listings/${listingId}`, {
+  }>(`/listings/${listingId}`, {
     method: "PATCH",
     headers: getAuthHeaders(),
     body: payload,
@@ -220,9 +220,8 @@ export async function updateListing(
 }
 
 export async function deleteListing(listingId: string): Promise<void> {
-  await apiFetch(`/api/v1/listings/${listingId}`, {
+  await apiFetch(`/listings/${listingId}`, {
     method: "DELETE",
     headers: getAuthHeaders(),
   });
 }
-

@@ -53,8 +53,11 @@ export interface MessageResponse {
 }
 
 export const messageApi = {
-  createMessage: async (bookingId: string, payload: CreateMessagePayload): Promise<MessageResponse> => {
-    return apiFetch<MessageResponse>(`/api/v1/bookings/${bookingId}/messages`, {
+  createMessage: async (
+    bookingId: string,
+    payload: CreateMessagePayload
+  ): Promise<MessageResponse> => {
+    return apiFetch<MessageResponse>(`/bookings/${bookingId}/messages`, {
       method: "POST",
       body: payload,
       withCredentials: true,
@@ -74,7 +77,7 @@ export const messageApi = {
 
     const queryString = queryParams.toString();
     return apiFetch<MessagesResponse>(
-      `/api/v1/bookings/${bookingId}/messages${queryString ? `?${queryString}` : ""}`,
+      `/bookings/${bookingId}/messages${queryString ? `?${queryString}` : ""}`,
       {
         method: "GET",
         withCredentials: true,
@@ -83,10 +86,9 @@ export const messageApi = {
   },
 
   markMessagesAsRead: async (bookingId: string): Promise<void> => {
-    await apiFetch(`/api/v1/bookings/${bookingId}/messages/read`, {
+    await apiFetch(`/bookings/${bookingId}/messages/read`, {
       method: "PATCH",
       withCredentials: true,
     });
   },
 };
-

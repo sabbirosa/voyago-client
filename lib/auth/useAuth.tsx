@@ -46,6 +46,12 @@ type VerifyOTPResponse = {
   };
 };
 
+type VerifyOTPResult = {
+  success: boolean;
+  needsApproval?: boolean;
+  message?: string;
+};
+
 type AuthContextValue = {
   user: AuthUser;
   isLoading: boolean;
@@ -53,7 +59,7 @@ type AuthContextValue = {
   role: UserRole;
   login: (payload: { email: string; password: string }) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<RegisterResponse["data"]>;
-  verifyOTP: (payload: { email: string; otp: string }) => Promise<void>;
+  verifyOTP: (payload: { email: string; otp: string }) => Promise<VerifyOTPResult>;
   resendOTP: (email: string) => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -138,7 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const verifyOTP = async (payload: { email: string; otp: string }) => {
+  const verifyOTP = async (payload: { email: string; otp: string }): Promise<VerifyOTPResult> => {
     setIsLoading(true);
     try {
       const response = await apiFetch<VerifyOTPResponse>("/auth/verify-otp", {
@@ -149,14 +155,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { accessToken, refreshToken } = response.data;
       saveTokens({ accessToken, refreshToken });
 
-      // Fetch real user profile
-      const profile = await getMyProfile();
-      setUser({
-        id: profile.id,
-        name: profile.name,
-        email: profile.email,
-        role: profile.role,
-      });
+      // Try to fetch real user profile
+      try {
+        const profile = await getMyProfile();
+        setUser({
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          role: profile.role,
+        });
+        return { success: true };
+      } catch (profileError: any) {
+        // If profile fetch fails due to approval, handle gracefully
+        const errorMessage = profileError?.message || "";
+        if (errorMessage.includes("pending approval") || errorMessage.includes("approval")) {
+          // Clear tokens since user can't use them yet
+          clearTokens();
+          return {
+            success: true,
+            needsApproval: true,
+            message: "Your email has been verified! Your account is pending approval by an administrator. You will be notified once approved.",
+          };
+        }
+        // For other errors, rethrow
+        throw profileError;
+      }
+    } catch (error: any) {
+      // Clear tokens on error
+      clearTokens();
+      const errorMessage = error?.message || "Verification failed. Please try again.";
+      throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
     }

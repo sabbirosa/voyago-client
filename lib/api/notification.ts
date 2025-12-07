@@ -43,11 +43,12 @@ export const notificationApi = {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append("page", String(params.page));
     if (params?.limit) queryParams.append("limit", String(params.limit));
-    if (params?.read !== undefined) queryParams.append("read", String(params.read));
+    if (params?.read !== undefined)
+      queryParams.append("read", String(params.read));
 
     const queryString = queryParams.toString();
     return apiFetch<NotificationsResponse>(
-      `/api/v1/notifications${queryString ? `?${queryString}` : ""}`,
+      `/notifications${queryString ? `?${queryString}` : ""}`,
       {
         method: "GET",
         withCredentials: true,
@@ -56,25 +57,23 @@ export const notificationApi = {
   },
 
   getUnreadCount: async (): Promise<UnreadCountResponse> => {
-    return apiFetch<UnreadCountResponse>("/api/v1/notifications/unread-count", {
+    return apiFetch<UnreadCountResponse>("/notifications/unread-count", {
       method: "GET",
       withCredentials: true,
     });
   },
 
   markAsRead: async (id: string): Promise<void> => {
-    await apiFetch(`/api/v1/notifications/${id}/read`, {
+    await apiFetch(`/notifications/${id}/read`, {
       method: "PATCH",
       withCredentials: true,
     });
   },
 
   markAllAsRead: async (): Promise<void> => {
-    await apiFetch("/api/v1/notifications/read-all", {
+    await apiFetch("/notifications/read-all", {
       method: "PATCH",
       withCredentials: true,
     });
   },
 };
-
-

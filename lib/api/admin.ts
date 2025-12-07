@@ -45,7 +45,12 @@ export interface AdminAnalytics {
   bookingsByStatus: Record<string, number>;
   bookingsByMonth: Array<{ month: string; count: number; revenue: number }>;
   topCities: Array<{ city: string; country: string; count: number }>;
-  topGuides: Array<{ guideId: string; guideName: string; bookings: number; revenue: number }>;
+  topGuides: Array<{
+    guideId: string;
+    guideName: string;
+    bookings: number;
+    revenue: number;
+  }>;
   popularCategories: Array<{ category: string; count: number }>;
 }
 
@@ -96,15 +101,17 @@ export const adminApi = {
   }): Promise<UsersResponse> => {
     const queryParams = new URLSearchParams();
     if (params?.role) queryParams.append("role", params.role);
-    if (params?.isBanned !== undefined) queryParams.append("isBanned", String(params.isBanned));
-    if (params?.isApproved !== undefined) queryParams.append("isApproved", String(params.isApproved));
+    if (params?.isBanned !== undefined)
+      queryParams.append("isBanned", String(params.isBanned));
+    if (params?.isApproved !== undefined)
+      queryParams.append("isApproved", String(params.isApproved));
     if (params?.page) queryParams.append("page", String(params.page));
     if (params?.limit) queryParams.append("limit", String(params.limit));
     if (params?.search) queryParams.append("search", params.search);
 
     const queryString = queryParams.toString();
     return apiFetch<UsersResponse>(
-      `/api/v1/admin/users${queryString ? `?${queryString}` : ""}`,
+      `/admin/users${queryString ? `?${queryString}` : ""}`,
       {
         method: "GET",
         withCredentials: true,
@@ -120,7 +127,7 @@ export const adminApi = {
       role?: "TOURIST" | "GUIDE" | "ADMIN";
     }
   ): Promise<{ success: boolean; data: { user: AdminUser } }> => {
-    return apiFetch(`/api/v1/admin/users/${id}`, {
+    return apiFetch(`/admin/users/${id}`, {
       method: "PATCH",
       body: payload,
       withCredentials: true,
@@ -143,7 +150,7 @@ export const adminApi = {
 
     const queryString = queryParams.toString();
     return apiFetch<ListingsResponse>(
-      `/api/v1/admin/listings${queryString ? `?${queryString}` : ""}`,
+      `/admin/listings${queryString ? `?${queryString}` : ""}`,
       {
         method: "GET",
         withCredentials: true,
@@ -155,7 +162,7 @@ export const adminApi = {
     id: string,
     payload: { status?: "DRAFT" | "ACTIVE" | "INACTIVE" | "BLOCKED" }
   ): Promise<{ success: boolean; data: { listing: AdminListing } }> => {
-    return apiFetch(`/api/v1/admin/listings/${id}`, {
+    return apiFetch(`/admin/listings/${id}`, {
       method: "PATCH",
       body: payload,
       withCredentials: true,
@@ -163,11 +170,9 @@ export const adminApi = {
   },
 
   getAnalytics: async (): Promise<AnalyticsResponse> => {
-    return apiFetch<AnalyticsResponse>("/api/v1/admin/analytics", {
+    return apiFetch<AnalyticsResponse>("/admin/analytics", {
       method: "GET",
       withCredentials: true,
     });
   },
 };
-
-
