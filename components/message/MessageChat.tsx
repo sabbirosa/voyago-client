@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { messageApi, Message } from "@/lib/api/message";
-import { useAuth } from "@/lib/auth/useAuth";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send } from "lucide-react";
-import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
+import { Message, messageApi } from "@/lib/api/message";
+import { useAuth } from "@/lib/auth/useAuth";
 import { format } from "date-fns";
+import { Send } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 interface MessageChatProps {
   bookingId: string;
@@ -87,7 +87,9 @@ export function MessageChat({ bookingId }: MessageChatProps) {
     return (
       <Card>
         <CardContent className="pt-6">
-          <p className="text-center text-muted-foreground">Loading messages...</p>
+          <p className="text-center text-muted-foreground">
+            Loading messages...
+          </p>
         </CardContent>
       </Card>
     );
@@ -111,12 +113,16 @@ export function MessageChat({ bookingId }: MessageChatProps) {
                 return (
                   <div
                     key={message.id}
-                    className={`flex gap-3 ${isOwnMessage ? "justify-end" : "justify-start"}`}
+                    className={`flex gap-3 ${
+                      isOwnMessage ? "justify-end" : "justify-start"
+                    }`}
                   >
                     {!isOwnMessage && (
                       <Avatar className="h-8 w-8">
                         <AvatarImage
-                          src={message.fromUser?.profile?.avatarUrl || undefined}
+                          src={
+                            message.fromUser?.profile?.avatarUrl || undefined
+                          }
                         />
                         <AvatarFallback>
                           {message.fromUser?.name?.[0] || "U"}
@@ -143,9 +149,6 @@ export function MessageChat({ bookingId }: MessageChatProps) {
                     </div>
                     {isOwnMessage && (
                       <Avatar className="h-8 w-8">
-                        <AvatarImage
-                          src={user?.profile?.avatarUrl || undefined}
-                        />
                         <AvatarFallback>
                           {user?.name?.[0] || "U"}
                         </AvatarFallback>
@@ -186,4 +189,3 @@ export function MessageChat({ bookingId }: MessageChatProps) {
     </Card>
   );
 }
-

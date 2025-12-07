@@ -1,13 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { availabilityApi, AvailabilitySlot } from "@/lib/api/availability";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Form,
   FormControl,
@@ -16,6 +9,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -24,28 +18,46 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { availabilityApi, AvailabilitySlot } from "@/lib/api/availability";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 
-const availabilitySlotSchema = z.object({
-  date: z.string().optional(),
-  dayOfWeek: z.number().int().min(0).max(6).optional(),
-  startTime: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, "Time must be in HH:mm format"),
-  endTime: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, "Time must be in HH:mm format"),
-  isRecurring: z.boolean().default(false),
-}).refine(
-  (data) => {
-    if (data.isRecurring && data.dayOfWeek === undefined) {
-      return false;
+const availabilitySlotSchema = z
+  .object({
+    date: z.string().optional(),
+    dayOfWeek: z.number().int().min(0).max(6).optional(),
+    startTime: z
+      .string()
+      .regex(
+        /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/,
+        "Time must be in HH:mm format"
+      ),
+    endTime: z
+      .string()
+      .regex(
+        /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/,
+        "Time must be in HH:mm format"
+      ),
+    isRecurring: z.boolean(),
+  })
+  .refine(
+    (data) => {
+      if (data.isRecurring && data.dayOfWeek === undefined) {
+        return false;
+      }
+      if (!data.isRecurring && !data.date) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message:
+        "Recurring slots require day of week, one-time slots require date",
     }
-    if (!data.isRecurring && !data.date) {
-      return false;
-    }
-    return true;
-  },
-  {
-    message: "Recurring slots require day of week, one-time slots require date",
-  }
-);
+  );
 
 type AvailabilitySlotFormData = z.infer<typeof availabilitySlotSchema>;
 
@@ -54,9 +66,20 @@ interface AvailabilitySlotFormProps {
   onSuccess: () => void;
 }
 
-const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const dayNames = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 
-export function AvailabilitySlotForm({ slot, onSuccess }: AvailabilitySlotFormProps) {
+export function AvailabilitySlotForm({
+  slot,
+  onSuccess,
+}: AvailabilitySlotFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<AvailabilitySlotFormData>({
@@ -97,7 +120,9 @@ export function AvailabilitySlotForm({ slot, onSuccess }: AvailabilitySlotFormPr
       onSuccess();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to save availability slot"
+        error instanceof Error
+          ? error.message
+          : "Failed to save availability slot"
       );
     } finally {
       setIsSubmitting(false);
@@ -208,4 +233,3 @@ export function AvailabilitySlotForm({ slot, onSuccess }: AvailabilitySlotFormPr
     </Form>
   );
 }
-

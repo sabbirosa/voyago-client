@@ -1,26 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { adminApi, AdminAnalytics } from "@/lib/api/admin";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Users, MapPin, Calendar, DollarSign, TrendingUp, BarChart3 } from "lucide-react";
-import { toast } from "sonner";
+import { AdminAnalytics, adminApi } from "@/lib/api/admin";
 import {
-  BarChart,
+  BarChart3,
+  Calendar,
+  DollarSign,
+  MapPin,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import {
   Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
+import { toast } from "sonner";
 
 const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6"];
 
@@ -63,17 +70,21 @@ export default function AdminAnalyticsPage() {
         <PageHeader title="Analytics Dashboard" />
         <Card>
           <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">No analytics data available</p>
+            <p className="text-center text-muted-foreground">
+              No analytics data available
+            </p>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  const bookingStatusData = Object.entries(analytics.bookingsByStatus).map(([status, count]) => ({
-    status,
-    count,
-  }));
+  const bookingStatusData = Object.entries(analytics.bookingsByStatus).map(
+    ([status, count]) => ({
+      status,
+      count,
+    })
+  );
 
   const categoryData = analytics.popularCategories.map((cat) => ({
     name: cat.category,
@@ -104,18 +115,24 @@ export default function AdminAnalyticsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Listings</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Listings
+            </CardTitle>
             <MapPin className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{analytics.totalListings}</div>
-            <div className="text-xs text-muted-foreground mt-1">Active tours</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              Active tours
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Bookings
+            </CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -130,7 +147,9 @@ export default function AdminAnalyticsPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${analytics.totalRevenue.toFixed(2)}</div>
+            <div className="text-2xl font-bold">
+              ${analytics.totalRevenue.toFixed(2)}
+            </div>
             <div className="text-xs text-muted-foreground mt-1">
               Platform fees: ${analytics.platformFees.toFixed(2)}
             </div>
@@ -157,8 +176,18 @@ export default function AdminAnalyticsPage() {
                 <YAxis yAxisId="right" orientation="right" />
                 <Tooltip />
                 <Legend />
-                <Bar yAxisId="left" dataKey="count" fill="#4F46E5" name="Bookings" />
-                <Bar yAxisId="right" dataKey="revenue" fill="#10B981" name="Revenue ($)" />
+                <Bar
+                  yAxisId="left"
+                  dataKey="count"
+                  fill="#4F46E5"
+                  name="Bookings"
+                />
+                <Bar
+                  yAxisId="right"
+                  dataKey="revenue"
+                  fill="#10B981"
+                  name="Revenue ($)"
+                />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -198,13 +227,18 @@ export default function AdminAnalyticsPage() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) =>
+                    `${name} ${(percent ?? 0 * 100).toFixed(0)}%`
+                  }
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
                 >
                   {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -252,7 +286,9 @@ export default function AdminAnalyticsPage() {
                 className="flex items-center justify-between p-3 rounded border"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-muted-foreground font-medium">#{index + 1}</span>
+                  <span className="text-muted-foreground font-medium">
+                    #{index + 1}
+                  </span>
                   <div>
                     <div className="font-medium">{guide.guideName}</div>
                     <div className="text-sm text-muted-foreground">
@@ -261,7 +297,9 @@ export default function AdminAnalyticsPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-semibold">${guide.revenue.toFixed(2)}</div>
+                  <div className="font-semibold">
+                    ${guide.revenue.toFixed(2)}
+                  </div>
                   <div className="text-xs text-muted-foreground">Revenue</div>
                 </div>
               </div>
@@ -272,4 +310,3 @@ export default function AdminAnalyticsPage() {
     </div>
   );
 }
-

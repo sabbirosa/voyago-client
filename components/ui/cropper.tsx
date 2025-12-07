@@ -1,6 +1,8 @@
 import { Cropper } from "@origin-space/image-cropper";
 import React from "react";
-import { Area } from "recharts";
+
+// Define type for pixel crop area
+type Area = { x: number; y: number; width: number; height: number };
 
 function MyImageCropper() {
   const [cropData, setCropData] = React.useState<Area | null>(null);

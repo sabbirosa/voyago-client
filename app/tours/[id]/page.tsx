@@ -13,7 +13,6 @@ import { MapPin, Clock, Users, Languages, Star, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { wishlistApi } from "@/lib/api/wishlist";
 import { useAuth } from "@/lib/auth/useAuth";
-import { useState, useEffect } from "react";
 
 export default function TourDetailsPage() {
   const params = useParams();
