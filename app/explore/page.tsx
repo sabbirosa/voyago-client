@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { getListings, type Listing, type GetListingsQuery } from "@/lib/api/listing";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -16,19 +18,34 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MapPin, Clock, Users, Star, Search, Filter } from "lucide-react";
+import {
+  getListings,
+  type GetListingsQuery,
+  type Listing,
+} from "@/lib/api/listing";
 import { listingCategoryOptions } from "@/lib/validation/listing";
+import { Clock, Filter, MapPin, Search, Star, Users } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 function ExploreContent() {
   const searchParams = useSearchParams();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [meta, setMeta] = useState<{ page: number; limit: number; total: number; totalPage: number } | null>(null);
-  
+  const [meta, setMeta] = useState<{
+    page: number;
+    limit: number;
+    total: number;
+    totalPage: number;
+  } | null>(null);
+
   // Filter states
   const [search, setSearch] = useState(searchParams.get("search") || "");
-  const [category, setCategory] = useState<string>(searchParams.get("category") || "all");
+  const [category, setCategory] = useState<string>(
+    searchParams.get("category") || "all"
+  );
   const [city, setCity] = useState(searchParams.get("city") || "");
   const [country, setCountry] = useState(searchParams.get("country") || "");
   const [minPrice, setMinPrice] = useState("");
@@ -68,7 +85,17 @@ function ExploreContent() {
     }
 
     fetchListings();
-  }, [search, category, city, country, minPrice, maxPrice, sortBy, sortOrder, currentPage]);
+  }, [
+    search,
+    category,
+    city,
+    country,
+    minPrice,
+    maxPrice,
+    sortBy,
+    sortOrder,
+    currentPage,
+  ]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,13 +115,15 @@ function ExploreContent() {
   };
 
   const formatPrice = (listing: Listing) => {
-    return `$${listing.tourFee.toFixed(2)}${listing.feeType === "PER_PERSON" ? "/person" : "/group"}`;
+    return `$${listing.tourFee.toFixed(2)}${
+      listing.feeType === "PER_PERSON" ? "/person" : "/group"
+    }`;
   };
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
+        <div className="mb-8 mt-12">
           <h1 className="text-4xl font-bold mb-2">Explore Tours</h1>
           <p className="text-muted-foreground">
             Discover amazing tours and experiences around the world
@@ -174,7 +203,10 @@ function ExploreContent() {
                     <SelectItem value="title">Title</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as "asc" | "desc")}>
+                <Select
+                  value={sortOrder}
+                  onValueChange={(v) => setSortOrder(v as "asc" | "desc")}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Order" />
                   </SelectTrigger>
@@ -209,7 +241,9 @@ function ExploreContent() {
         ) : listings.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-muted-foreground">No tours found. Try adjusting your filters.</p>
+              <p className="text-muted-foreground">
+                No tours found. Try adjusting your filters.
+              </p>
             </CardContent>
           </Card>
         ) : (
@@ -229,12 +263,16 @@ function ExploreContent() {
                           className="h-full w-full object-cover"
                         />
                         <div className="absolute top-2 right-2">
-                          <Badge variant="secondary">{listing.category.replace(/_/g, " ")}</Badge>
+                          <Badge variant="secondary">
+                            {listing.category.replace(/_/g, " ")}
+                          </Badge>
                         </div>
                       </div>
                     )}
                     <CardHeader>
-                      <CardTitle className="line-clamp-2">{listing.title}</CardTitle>
+                      <CardTitle className="line-clamp-2">
+                        {listing.title}
+                      </CardTitle>
                       <CardDescription className="flex items-center gap-1">
                         <MapPin className="h-3 w-3" />
                         {listing.city}, {listing.country}
@@ -267,7 +305,9 @@ function ExploreContent() {
                           )}
                         </div>
                         <div className="flex items-center justify-between pt-2 border-t">
-                          <span className="text-lg font-semibold">{formatPrice(listing)}</span>
+                          <span className="text-lg font-semibold">
+                            {formatPrice(listing)}
+                          </span>
                           <Button size="sm">View Details</Button>
                         </div>
                       </div>
@@ -339,4 +379,3 @@ export default function ExplorePage() {
     </Suspense>
   );
 }
-

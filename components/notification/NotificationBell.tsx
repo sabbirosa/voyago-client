@@ -13,60 +13,61 @@ import { Notification, notificationApi } from "@/lib/api/notification";
 import { useAuth } from "@/lib/auth/useAuth";
 import { format } from "date-fns";
 import { Bell } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export function NotificationBell() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchUnreadCount();
-      if (open) {
-        fetchNotifications();
-      }
-    }
-  }, [open, isAuthenticated]);
-
-  // Poll for unread count every 30 seconds (only if authenticated)
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    const interval = setInterval(fetchUnreadCount, 30000);
-    return () => clearInterval(interval);
-  }, [isAuthenticated]);
-
-  const fetchUnreadCount = async () => {
-    if (!isAuthenticated) return;
+  const fetchUnreadCount = useCallback(async () => {
     try {
       const response = await notificationApi.getUnreadCount();
       setUnreadCount(response.data.count);
     } catch (error: any) {
-      // Silently fail for 401 (unauthorized) - user might not be logged in
-      // For other errors, also fail silently as notifications are not critical
-      if (
-        error?.message?.includes("401") ||
-        error?.message?.includes("Unauthorized")
-      ) {
-        setUnreadCount(0);
-      }
+      // Silently fail - notifications are not critical
+      setUnreadCount(0);
     }
-  };
+  }, []);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
       const response = await notificationApi.getNotifications({ limit: 20 });
       setNotifications(response.data.notifications);
-    } catch (error) {
-      toast.error("Failed to load notifications");
+    } catch (error: any) {
+      // Silently fail for 401 (unauthorized)
+      if (
+        !error?.message?.includes("401") &&
+        !error?.message?.includes("Unauthorized")
+      ) {
+        toast.error("Failed to load notifications");
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // Don't render if not authenticated or auth is still loading
+  if (authLoading || !isAuthenticated) {
+    return null;
+  }
+
+  useEffect(() => {
+    fetchUnreadCount();
+    if (open) {
+      fetchNotifications();
+    }
+  }, [open, fetchUnreadCount, fetchNotifications]);
+
+  // Poll for unread count every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, [fetchUnreadCount]);
 
   const handleMarkAsRead = async (id: string) => {
     try {
