@@ -191,4 +191,47 @@ export const adminApi = {
       withCredentials: true,
     });
   },
+
+  getBookings: async (params?: {
+    status?: string;
+    touristId?: string;
+    guideId?: string;
+    listingId?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    page?: number;
+    limit?: number;
+    sort?: string;
+  }): Promise<{
+    success: boolean;
+    message: string;
+    data: { bookings: any[] };
+    meta?: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPage: number;
+    };
+  }> => {
+    const queryParams = new URLSearchParams();
+    if (params?.status) queryParams.append("status", params.status);
+    if (params?.touristId) queryParams.append("touristId", params.touristId);
+    if (params?.guideId) queryParams.append("guideId", params.guideId);
+    if (params?.listingId) queryParams.append("listingId", params.listingId);
+    if (params?.dateFrom) queryParams.append("dateFrom", params.dateFrom);
+    if (params?.dateTo) queryParams.append("dateTo", params.dateTo);
+    if (params?.page) queryParams.append("page", String(params.page));
+    if (params?.limit) queryParams.append("limit", String(params.limit));
+    if (params?.sort) queryParams.append("sort", params.sort);
+
+    const queryString = queryParams.toString();
+    return apiFetch(
+      `/admin/bookings${queryString ? `?${queryString}` : ""}`,
+      {
+        method: "GET",
+        headers: getAuthHeaders(),
+        withCredentials: true,
+      }
+    );
+  },
 };

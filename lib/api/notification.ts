@@ -1,4 +1,15 @@
 import { apiFetch } from "./client";
+import { getTokens } from "../auth/tokenStorage";
+
+function getAuthHeaders(): HeadersInit {
+  const tokens = getTokens();
+  if (!tokens) {
+    throw new Error("Not authenticated");
+  }
+  return {
+    Authorization: `Bearer ${tokens.accessToken}`,
+  };
+}
 
 export interface Notification {
   id: string;
@@ -51,6 +62,7 @@ export const notificationApi = {
       `/notifications${queryString ? `?${queryString}` : ""}`,
       {
         method: "GET",
+        headers: getAuthHeaders(),
         withCredentials: true,
       }
     );
@@ -59,6 +71,7 @@ export const notificationApi = {
   getUnreadCount: async (): Promise<UnreadCountResponse> => {
     return apiFetch<UnreadCountResponse>("/notifications/unread-count", {
       method: "GET",
+      headers: getAuthHeaders(),
       withCredentials: true,
     });
   },
@@ -66,6 +79,7 @@ export const notificationApi = {
   markAsRead: async (id: string): Promise<void> => {
     await apiFetch(`/notifications/${id}/read`, {
       method: "PATCH",
+      headers: getAuthHeaders(),
       withCredentials: true,
     });
   },
@@ -73,6 +87,7 @@ export const notificationApi = {
   markAllAsRead: async (): Promise<void> => {
     await apiFetch("/notifications/read-all", {
       method: "PATCH",
+      headers: getAuthHeaders(),
       withCredentials: true,
     });
   },

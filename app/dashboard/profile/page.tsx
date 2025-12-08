@@ -22,7 +22,7 @@ import { ProfilePageSkeleton } from "./_components/ProfilePageSkeleton";
 import { SettingsForm } from "./_components/SettingsForm";
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { setSkeleton } = useSkeleton();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,31 +36,44 @@ export default function ProfilePage() {
 
   useEffect(() => {
     async function loadProfile() {
+      // Wait for auth to finish loading
+      if (authLoading) {
+        return;
+      }
+
       if (!user) {
         setIsLoading(false);
         return;
       }
 
       try {
+        setIsLoading(true);
         const data = await getMyProfile();
         setProfile(data);
         // If user is a guide and doesn't have a guide profile, show onboarding
         if (data.role === "GUIDE" && !data.guideProfile) {
           setActiveTab("guide-onboarding");
         }
-      } catch (error) {
+      } catch (error: any) {
         const errorMessage =
           error instanceof Error
             ? error.message || "Failed to load profile"
             : "Failed to load profile";
+        
+        console.error("[ProfilePage] Error loading profile:", error);
+        
         // Only show error if it's not a 401/403 (authentication errors)
-        if (
-          error instanceof Error &&
-          !error.message.includes("Not authenticated") &&
-          !error.message.includes("401") &&
-          !error.message.includes("403")
-        ) {
+        const isAuthError =
+          error?.message?.includes("Not authenticated") ||
+          error?.message?.includes("401") ||
+          error?.message?.includes("403") ||
+          error?.message?.includes("Unauthorized");
+        
+        if (!isAuthError) {
           toast.error(errorMessage);
+        } else {
+          // For auth errors, redirect to login or show message
+          console.warn("[ProfilePage] Authentication error, user may need to login");
         }
       } finally {
         setIsLoading(false);
@@ -68,7 +81,7 @@ export default function ProfilePage() {
     }
 
     loadProfile();
-  }, [user]);
+  }, [user, authLoading]);
 
   const handleProfileUpdate = async () => {
     try {
@@ -89,8 +102,44 @@ export default function ProfilePage() {
     }
   }, [isGuide, hasGuideProfile, activeTab]);
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return <ProfilePageSkeleton />;
+  }
+
+  if (!user) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="My Profile"
+          description="Manage your profile information and preferences"
+        />
+        <Card>
+          <CardContent className="pt-6 text-center py-12">
+            <p className="text-muted-foreground mb-4">
+              Please login to view your profile
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="My Profile"
+          description="Manage your profile information and preferences"
+        />
+        <Card>
+          <CardContent className="pt-6 text-center py-12">
+            <p className="text-muted-foreground mb-4">
+              Failed to load profile. Please try refreshing the page.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (

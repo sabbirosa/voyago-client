@@ -161,9 +161,9 @@ export const SIDEBAR_CONFIG_BY_ROLE: Record<RoleKey, SidebarConfig> = {
         icon: IconFileDescription,
       },
       {
-        title: "Analytics",
-        url: "/dashboard/admin/analytics",
-        icon: IconChartBar,
+        title: "Bookings",
+        url: "/dashboard/admin/bookings",
+        icon: IconFolder,
       },
     ],
     documents: [

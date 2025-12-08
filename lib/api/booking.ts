@@ -1,4 +1,15 @@
 import { apiFetch } from "./client";
+import { getTokens } from "../auth/tokenStorage";
+
+function getAuthHeaders(): HeadersInit {
+  const tokens = getTokens();
+  if (!tokens) {
+    throw new Error("Not authenticated");
+  }
+  return {
+    Authorization: `Bearer ${tokens.accessToken}`,
+  };
+}
 
 export interface Booking {
   id: string;
@@ -99,6 +110,7 @@ export const bookingApi = {
   ): Promise<BookingResponse> => {
     return apiFetch<BookingResponse>("/bookings", {
       method: "POST",
+      headers: getAuthHeaders(),
       body: payload,
       withCredentials: true,
     });
@@ -127,6 +139,7 @@ export const bookingApi = {
       `/bookings/me${queryString ? `?${queryString}` : ""}`,
       {
         method: "GET",
+        headers: getAuthHeaders(),
         withCredentials: true,
       }
     );
@@ -135,6 +148,7 @@ export const bookingApi = {
   getBookingById: async (id: string): Promise<BookingResponse> => {
     return apiFetch<BookingResponse>(`/bookings/${id}`, {
       method: "GET",
+      headers: getAuthHeaders(),
       withCredentials: true,
     });
   },
@@ -145,6 +159,7 @@ export const bookingApi = {
   ): Promise<BookingResponse> => {
     return apiFetch<BookingResponse>(`/bookings/${id}/status`, {
       method: "PATCH",
+      headers: getAuthHeaders(),
       body: payload,
       withCredentials: true,
     });

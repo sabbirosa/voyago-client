@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { bookingApi, Booking } from "@/lib/api/booking";
 import { DataTableCommon } from "@/components/common/data-table";
@@ -42,13 +42,40 @@ export default function GuideBookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [actionDialogOpen, setActionDialogOpen] = useState(false);
   const [actionType, setActionType] = useState<"accept" | "decline" | null>(null);
+  const fetchingRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Reset page when tab changes
+  useEffect(() => {
+    if (page !== 1) {
+      setPage(1);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
-    fetchBookings();
+    const timeoutId = setTimeout(() => {
+      fetchBookings();
+    }, 100); // Small delay to debounce rapid changes
+    
+    return () => {
+      clearTimeout(timeoutId);
+      // Cancel any in-flight requests when component unmounts or dependencies change
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [activeTab, page]);
 
   const fetchBookings = async () => {
+    if (fetchingRef.current) return;
+    
+    // Cancel previous request if any
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
     try {
+      fetchingRef.current = true;
       setLoading(true);
       const params: any = { page, limit: 10 };
       if (activeTab === "pending") {
@@ -61,10 +88,22 @@ export default function GuideBookingsPage() {
       const response = await bookingApi.getBookings(params);
       setBookings(response.data.bookings);
       setTotal(response.meta?.total || 0);
-    } catch (error) {
+    } catch (error: any) {
+      // Don't show error if request was aborted
+      if (error?.name === "AbortError") {
+        return;
+      }
+      // Handle 429 rate limit errors gracefully
+      if (error?.message?.includes("429") || error?.message?.includes("Too Many Requests")) {
+        console.warn("Rate limited, please wait a moment");
+        // Don't show toast for rate limits, just log
+        return;
+      }
       toast.error("Failed to load bookings");
     } finally {
       setLoading(false);
+      fetchingRef.current = false;
+      abortControllerRef.current = null;
     }
   };
 

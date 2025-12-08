@@ -25,6 +25,7 @@ import {
 } from "@/lib/api/listing";
 import { listingCategoryOptions } from "@/lib/validation/listing";
 import { Clock, Filter, MapPin, Search, Star, Users } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -254,12 +255,14 @@ function ExploreContent() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {listings.map((listing) => (
                 <Link key={listing.id} href={`/tours/${listing.id}`}>
-                  <Card className="overflow-hidden cursor-pointer transition-shadow hover:shadow-lg h-full flex flex-col">
+                  <Card className="overflow-hidden cursor-pointer transition-shadow hover:shadow-lg h-full flex flex-col pt-0">
                     {listing.images?.[0] && (
                       <div className="relative h-48 w-full">
-                        <img
+                        <Image
                           src={listing.images[0].url}
                           alt={listing.title}
+                          height={192}
+                          width={288}
                           className="h-full w-full object-cover"
                         />
                         <div className="absolute top-2 right-2">
@@ -304,7 +307,7 @@ function ExploreContent() {
                             </div>
                           )}
                         </div>
-                        <div className="flex items-center justify-between pt-2 border-t">
+                        <div className="flex items-center justify-between pt-2 border-t pt-6">
                           <span className="text-lg font-semibold">
                             {formatPrice(listing)}
                           </span>

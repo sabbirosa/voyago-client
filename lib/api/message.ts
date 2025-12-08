@@ -1,4 +1,15 @@
 import { apiFetch } from "./client";
+import { getTokens } from "../auth/tokenStorage";
+
+function getAuthHeaders(): HeadersInit {
+  const tokens = getTokens();
+  if (!tokens) {
+    throw new Error("Not authenticated");
+  }
+  return {
+    Authorization: `Bearer ${tokens.accessToken}`,
+  };
+}
 
 export interface Message {
   id: string;
@@ -59,6 +70,7 @@ export const messageApi = {
   ): Promise<MessageResponse> => {
     return apiFetch<MessageResponse>(`/bookings/${bookingId}/messages`, {
       method: "POST",
+      headers: getAuthHeaders(),
       body: payload,
       withCredentials: true,
     });
@@ -80,6 +92,7 @@ export const messageApi = {
       `/bookings/${bookingId}/messages${queryString ? `?${queryString}` : ""}`,
       {
         method: "GET",
+        headers: getAuthHeaders(),
         withCredentials: true,
       }
     );
@@ -88,6 +101,7 @@ export const messageApi = {
   markMessagesAsRead: async (bookingId: string): Promise<void> => {
     await apiFetch(`/bookings/${bookingId}/messages/read`, {
       method: "PATCH",
+      headers: getAuthHeaders(),
       withCredentials: true,
     });
   },

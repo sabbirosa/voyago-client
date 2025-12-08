@@ -83,9 +83,9 @@ export function DataTableCommon<TData, TValue>({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 flex flex-col h-full">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 flex-shrink-0">
         <div className="flex flex-wrap items-center gap-2 flex-1 justify-between">
           {onSearchChange && (
             <div className="w-full max-w-xs">
@@ -104,87 +104,89 @@ export function DataTableCommon<TData, TValue>({
       </div>
 
       {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  const columnId = header.column.id;
-                  const canSort =
-                    header.column.getCanSort?.() ?? Boolean(onSortChange);
-                  const isActiveSort = sortBy === columnId;
-                  const direction = isActiveSort ? sortOrder : null;
+      <div className="rounded-md border flex-1 flex flex-col min-h-0">
+        <div className="w-full flex-1 overflow-y-auto overflow-x-visible">
+          <Table className="w-full">
+            <TableHeader className="sticky top-0 bg-background z-10">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    const columnId = header.column.id;
+                    const canSort =
+                      header.column.getCanSort?.() ?? Boolean(onSortChange);
+                    const isActiveSort = sortBy === columnId;
+                    const direction = isActiveSort ? sortOrder : null;
 
-                  return (
-                    <TableHead
-                      key={header.id}
-                      onClick={
-                        canSort ? () => handleToggleSort(columnId) : undefined
-                      }
-                      className={
-                        canSort ? "cursor-pointer select-none" : undefined
-                      }
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                      {canSort && (
-                        <span className="ml-1 inline-block text-muted-foreground">
-                          {direction === "asc" && "↑"}
-                          {direction === "desc" && "↓"}
-                        </span>
-                      )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              // Show skeleton rows
-              Array.from({ length: pageSize }).map((_, index) => (
-                <TableRow key={`skeleton-${index}`}>
-                  {columns.map((_, colIndex) => (
-                    <TableCell key={`skeleton-cell-${colIndex}`}>
-                      <Skeleton className="h-4 w-full" />
-                    </TableCell>
-                  ))}
+                    return (
+                      <TableHead
+                        key={header.id}
+                        onClick={
+                          canSort ? () => handleToggleSort(columnId) : undefined
+                        }
+                        className={
+                          canSort ? "cursor-pointer select-none" : undefined
+                        }
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                        {canSort && (
+                          <span className="ml-1 inline-block text-muted-foreground">
+                            {direction === "asc" && "↑"}
+                            {direction === "desc" && "↓"}
+                          </span>
+                        )}
+                      </TableHead>
+                    );
+                  })}
                 </TableRow>
-              ))
-            ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+              ))}
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                // Show skeleton rows
+                Array.from({ length: pageSize }).map((_, index) => (
+                  <TableRow key={`skeleton-${index}`}>
+                    {columns.map((_, colIndex) => (
+                      <TableCell key={`skeleton-cell-${colIndex}`}>
+                        <Skeleton className="h-4 w-full" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between gap-4 text-sm">
+      <div className="flex items-center justify-between gap-4 text-sm flex-shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-muted-foreground">Rows per page</span>
           <Select

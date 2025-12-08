@@ -24,14 +24,26 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false);
 
   const fetchUnreadCount = useCallback(async () => {
+    if (!isAuthenticated) {
+      setUnreadCount(0);
+      return;
+    }
     try {
       const response = await notificationApi.getUnreadCount();
       setUnreadCount(response.data.count);
     } catch (error: any) {
       // Silently fail - notifications are not critical
-      setUnreadCount(0);
+      // Only set to 0 if it's an auth error, otherwise keep current count
+      if (
+        error?.message?.includes("401") ||
+        error?.message?.includes("403") ||
+        error?.message?.includes("Unauthorized") ||
+        error?.message?.includes("Not authenticated")
+      ) {
+        setUnreadCount(0);
+      }
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -63,11 +75,17 @@ export function NotificationBell() {
     }
   }, [open, fetchUnreadCount, fetchNotifications]);
 
-  // Poll for unread count every 30 seconds
+  // Poll for unread count every 30 seconds (only if authenticated)
   useEffect(() => {
-    const interval = setInterval(fetchUnreadCount, 30000);
+    if (!isAuthenticated) return;
+    
+    const interval = setInterval(() => {
+      fetchUnreadCount().catch(() => {
+        // Silently fail - don't spam console with errors
+      });
+    }, 30000);
     return () => clearInterval(interval);
-  }, [fetchUnreadCount]);
+  }, [isAuthenticated, fetchUnreadCount]);
 
   const handleMarkAsRead = async (id: string) => {
     try {

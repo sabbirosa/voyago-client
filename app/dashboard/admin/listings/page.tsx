@@ -175,43 +175,14 @@ export default function AdminListingsPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 flex flex-col h-full">
       <PageHeader
         title="Listing Management"
         description="Approve, feature, and manage tour listings"
       />
 
-      {/* Filters */}
-      <div className="flex gap-4 items-end">
-        <div className="flex-1 space-y-2">
-          <Label>Search</Label>
-          <Input
-            placeholder="Search listings..."
-            value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Status</Label>
-          <Select
-            value={filters.status}
-            onValueChange={(value) => setFilters({ ...filters, status: value })}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All status</SelectItem>
-              <SelectItem value="DRAFT">Draft</SelectItem>
-              <SelectItem value="ACTIVE">Active</SelectItem>
-              <SelectItem value="INACTIVE">Inactive</SelectItem>
-              <SelectItem value="BLOCKED">Blocked</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <DataTableCommon
+      <div className="flex-1 flex flex-col min-h-0">
+        <DataTableCommon
         columns={columns}
         data={listings}
         isLoading={loading}
@@ -220,7 +191,48 @@ export default function AdminListingsPage() {
         pageSize={10}
         onPageChange={setPage}
         onPageSizeChange={() => {}}
+        search={filters.search}
+        onSearchChange={(value) => setFilters({ ...filters, search: value })}
+        filters={
+          <div className="flex items-center gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Status</Label>
+              <Select
+                value={filters.status}
+                onValueChange={(value) => {
+                  setPage(1);
+                  setFilters({ ...filters, status: value });
+                }}
+              >
+                <SelectTrigger className="w-[150px] h-9">
+                  <SelectValue placeholder="All status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All status</SelectItem>
+                  <SelectItem value="DRAFT">Draft</SelectItem>
+                  <SelectItem value="ACTIVE">Active</SelectItem>
+                  <SelectItem value="INACTIVE">Inactive</SelectItem>
+                  <SelectItem value="BLOCKED">Blocked</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {(filters.status !== "all" || filters.search) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setFilters({ status: "all", search: "" });
+                  setPage(1);
+                }}
+                className="h-9"
+              >
+                Clear Filters
+              </Button>
+            )}
+          </div>
+        }
       />
+      </div>
     </div>
   );
 }

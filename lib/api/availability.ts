@@ -1,4 +1,15 @@
 import { apiFetch } from "./client";
+import { getTokens } from "../auth/tokenStorage";
+
+function getAuthHeaders(): HeadersInit {
+  const tokens = getTokens();
+  if (!tokens) {
+    throw new Error("Not authenticated");
+  }
+  return {
+    Authorization: `Bearer ${tokens.accessToken}`,
+  };
+}
 
 export interface AvailabilitySlot {
   id: string;
@@ -67,6 +78,7 @@ export const availabilityApi = {
   ): Promise<AvailabilitySlotResponse> => {
     return apiFetch<AvailabilitySlotResponse>("/availability", {
       method: "POST",
+      headers: getAuthHeaders(),
       body: payload,
       withCredentials: true,
     });
@@ -95,6 +107,8 @@ export const availabilityApi = {
       `/availability${queryString ? `?${queryString}` : ""}`,
       {
         method: "GET",
+        headers: getAuthHeaders(),
+        withCredentials: true,
       }
     );
   },
@@ -111,6 +125,7 @@ export const availabilityApi = {
       `/availability/check?${queryParams.toString()}`,
       {
         method: "GET",
+        // Availability check can be public for tourists
       }
     );
   },
@@ -121,6 +136,7 @@ export const availabilityApi = {
   ): Promise<AvailabilitySlotResponse> => {
     return apiFetch<AvailabilitySlotResponse>(`/availability/${id}`, {
       method: "PATCH",
+      headers: getAuthHeaders(),
       body: payload,
       withCredentials: true,
     });
@@ -129,6 +145,7 @@ export const availabilityApi = {
   deleteSlot: async (id: string): Promise<void> => {
     await apiFetch(`/availability/${id}`, {
       method: "DELETE",
+      headers: getAuthHeaders(),
       withCredentials: true,
     });
   },

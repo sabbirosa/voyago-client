@@ -190,64 +190,14 @@ export default function AdminUsersPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 flex flex-col h-full">
       <PageHeader
         title="User Management"
         description="Manage users, roles, and account status"
       />
 
-      {/* Filters */}
-      <div className="flex gap-4 items-end">
-        <div className="flex-1 space-y-2">
-          <Label>Search</Label>
-          <Input
-            placeholder="Search by name or email..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Role</Label>
-          <Select
-            value={filters.role}
-            onValueChange={(value) => {
-              setPage(1);
-              setFilters({ ...filters, role: value });
-            }}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All roles" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All roles</SelectItem>
-              <SelectItem value="TOURIST">Tourist</SelectItem>
-              <SelectItem value="GUIDE">Guide</SelectItem>
-              <SelectItem value="ADMIN">Admin</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Status</Label>
-          <Select
-            value={filters.isBanned}
-            onValueChange={(value) => {
-              setPage(1);
-              setFilters({ ...filters, isBanned: value });
-            }}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All status</SelectItem>
-              <SelectItem value="false">Active</SelectItem>
-              <SelectItem value="true">Banned</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <DataTableCommon
+      <div className="flex-1 flex flex-col min-h-0">
+        <DataTableCommon
         columns={columns}
         data={users}
         isLoading={loading}
@@ -256,7 +206,67 @@ export default function AdminUsersPage() {
         pageSize={10}
         onPageChange={setPage}
         onPageSizeChange={() => {}}
+        search={searchInput}
+        onSearchChange={setSearchInput}
+        filters={
+          <div className="flex items-center gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Role</Label>
+              <Select
+                value={filters.role}
+                onValueChange={(value) => {
+                  setPage(1);
+                  setFilters({ ...filters, role: value });
+                }}
+              >
+                <SelectTrigger className="w-[150px] h-9">
+                  <SelectValue placeholder="All roles" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All roles</SelectItem>
+                  <SelectItem value="TOURIST">Tourist</SelectItem>
+                  <SelectItem value="GUIDE">Guide</SelectItem>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Status</Label>
+              <Select
+                value={filters.isBanned}
+                onValueChange={(value) => {
+                  setPage(1);
+                  setFilters({ ...filters, isBanned: value });
+                }}
+              >
+                <SelectTrigger className="w-[150px] h-9">
+                  <SelectValue placeholder="All status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All status</SelectItem>
+                  <SelectItem value="false">Active</SelectItem>
+                  <SelectItem value="true">Banned</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {(filters.role !== "all" || filters.isBanned !== "all" || searchInput) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setFilters({ role: "all", isBanned: "all", isApproved: "all", search: "" });
+                  setSearchInput("");
+                  setPage(1);
+                }}
+                className="h-9"
+              >
+                Clear Filters
+              </Button>
+            )}
+          </div>
+        }
       />
+      </div>
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>

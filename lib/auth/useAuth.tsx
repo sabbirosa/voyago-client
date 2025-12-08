@@ -59,7 +59,10 @@ type AuthContextValue = {
   role: UserRole;
   login: (payload: { email: string; password: string }) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<RegisterResponse["data"]>;
-  verifyOTP: (payload: { email: string; otp: string }) => Promise<VerifyOTPResult>;
+  verifyOTP: (payload: {
+    email: string;
+    otp: string;
+  }) => Promise<VerifyOTPResult>;
   resendOTP: (email: string) => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -85,10 +88,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             role: profile.role,
           });
         })
-        .catch(() => {
-          // If profile fetch fails, clear tokens and user
-          clearTokens();
-          setUser(null);
+        .catch((error) => {
+          // Log the error for debugging
+          console.error("[useAuth] Failed to fetch user profile:", error);
+          console.error("[useAuth] Error details:", {
+            message: error?.message,
+            stack: error?.stack,
+          });
+
+          // Check if it's an authentication error (401/403)
+          const isAuthError =
+            error?.message?.includes("401") ||
+            error?.message?.includes("403") ||
+            error?.message?.includes("Unauthorized") ||
+            error?.message?.includes("Not authenticated");
+
+          // Only clear tokens if it's an auth error
+          // For other errors (network, server), keep tokens and let user retry
+          if (isAuthError) {
+            console.warn("[useAuth] Authentication failed, clearing tokens");
+            clearTokens();
+            setUser(null);
+          } else {
+            // For non-auth errors, keep tokens but don't set user
+            // This allows the app to continue but user will need to refresh
+            console.warn(
+              "[useAuth] Non-auth error, keeping tokens:",
+              error?.message
+            );
+            setUser(null); // Don't set user, but keep tokens for retry
+          }
         })
         .finally(() => {
           setIsLoading(false);
@@ -144,7 +173,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const verifyOTP = async (payload: { email: string; otp: string }): Promise<VerifyOTPResult> => {
+  const verifyOTP = async (payload: {
+    email: string;
+    otp: string;
+  }): Promise<VerifyOTPResult> => {
     setIsLoading(true);
     try {
       const response = await apiFetch<VerifyOTPResponse>("/auth/verify-otp", {
@@ -168,13 +200,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (profileError: any) {
         // If profile fetch fails due to approval, handle gracefully
         const errorMessage = profileError?.message || "";
-        if (errorMessage.includes("pending approval") || errorMessage.includes("approval")) {
+        if (
+          errorMessage.includes("pending approval") ||
+          errorMessage.includes("approval")
+        ) {
           // Clear tokens since user can't use them yet
           clearTokens();
           return {
             success: true,
             needsApproval: true,
-            message: "Your email has been verified! Your account is pending approval by an administrator. You will be notified once approved.",
+            message:
+              "Your email has been verified! Your account is pending approval by an administrator. You will be notified once approved.",
           };
         }
         // For other errors, rethrow
@@ -183,7 +219,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error: any) {
       // Clear tokens on error
       clearTokens();
-      const errorMessage = error?.message || "Verification failed. Please try again.";
+      const errorMessage =
+        error?.message || "Verification failed. Please try again.";
       throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -236,5 +273,3 @@ export function useAuth(): AuthContextValue {
   }
   return ctx;
 }
-
-

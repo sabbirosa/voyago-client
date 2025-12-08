@@ -1,4 +1,15 @@
 import { apiFetch } from "./client";
+import { getTokens } from "../auth/tokenStorage";
+
+function getAuthHeaders(): HeadersInit {
+  const tokens = getTokens();
+  if (!tokens) {
+    throw new Error("Not authenticated");
+  }
+  return {
+    Authorization: `Bearer ${tokens.accessToken}`,
+  };
+}
 
 export interface Payment {
   id: string;
@@ -30,6 +41,7 @@ export const paymentApi = {
   createPaymentSession: async (bookingId: string): Promise<PaymentResponse> => {
     return apiFetch<PaymentResponse>(`/payments/booking/${bookingId}`, {
       method: "POST",
+      headers: getAuthHeaders(),
       withCredentials: true,
     });
   },
@@ -37,6 +49,7 @@ export const paymentApi = {
   getPaymentByBooking: async (bookingId: string): Promise<PaymentResponse> => {
     return apiFetch<PaymentResponse>(`/payments/booking/${bookingId}`, {
       method: "GET",
+      headers: getAuthHeaders(),
       withCredentials: true,
     });
   },

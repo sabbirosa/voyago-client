@@ -40,19 +40,27 @@ export default function TourDetailsPage() {
     }
 
     async function checkWishlist() {
-      if (isAuthenticated && listingId) {
-        try {
-          const response = await wishlistApi.checkWishlistStatus(listingId);
-          setIsInWishlist(response.data.isInWishlist);
-        } catch (err) {
-          // Silent fail for wishlist check
-        }
+      if (!isAuthenticated || !listingId) {
+        setIsInWishlist(false);
+        return;
+      }
+      try {
+        const response = await wishlistApi.checkWishlistStatus(listingId);
+        setIsInWishlist(response.data.isInWishlist);
+      } catch (err) {
+        // Silent fail for wishlist check - don't update state on error
+        // This prevents UI flickering when auth fails
       }
     }
 
     if (listingId) {
       fetchListing();
-      checkWishlist();
+      // Only check wishlist if authenticated
+      if (isAuthenticated) {
+        checkWishlist();
+      } else {
+        setIsInWishlist(false);
+      }
     }
   }, [listingId, isAuthenticated]);
 

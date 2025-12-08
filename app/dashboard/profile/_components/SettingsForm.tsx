@@ -87,6 +87,7 @@ export function SettingsForm({ initialData, onSuccess }: SettingsFormProps) {
             currentPassword: data.currentPassword,
             newPassword: data.newPassword,
           },
+          withCredentials: true,
         }
       );
       toast.success("Password changed successfully");
@@ -220,7 +221,7 @@ export function SettingsForm({ initialData, onSuccess }: SettingsFormProps) {
                       placeholder="Enter new password"
                       {...field}
                       disabled={isLoadingPassword}
-                      showStrengthIndicator={false}
+                      showStrengthIndicator={true}
                     />
                   </FormControl>
                   <FormMessage />

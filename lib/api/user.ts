@@ -82,6 +82,7 @@ export async function getMyProfile(): Promise<UserProfile> {
   }>("/users/me", {
     method: "GET",
     headers: getAuthHeaders(),
+    withCredentials: true,
   });
   return response.data.user;
 }
@@ -93,6 +94,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile> {
   }>(`/users/${userId}`, {
     method: "GET",
     headers: getAuthHeaders(),
+    withCredentials: true,
   });
   return response.data.user;
 }
@@ -107,6 +109,7 @@ export async function updateProfile(
     method: "PATCH",
     headers: getAuthHeaders(),
     body: payload,
+    withCredentials: true,
   });
   return response.data.profile;
 }
@@ -121,6 +124,7 @@ export async function createProfile(
     method: "POST",
     headers: getAuthHeaders(),
     body: payload,
+    withCredentials: true,
   });
   return response.data.profile;
 }
@@ -135,6 +139,7 @@ export async function updateGuideProfile(
     method: "PATCH",
     headers: getAuthHeaders(),
     body: payload,
+    withCredentials: true,
   });
   return response.data.guideProfile;
 }
@@ -149,6 +154,7 @@ export async function createGuideProfile(
     method: "POST",
     headers: getAuthHeaders(),
     body: payload,
+    withCredentials: true,
   });
   return response.data.guideProfile;
 }

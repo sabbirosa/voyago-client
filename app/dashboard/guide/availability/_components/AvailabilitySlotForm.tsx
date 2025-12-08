@@ -105,9 +105,28 @@ export function AvailabilitySlotForm({
       };
 
       if (data.isRecurring) {
+        if (data.dayOfWeek === undefined) {
+          toast.error("Please select a day of the week for recurring slots");
+          return;
+        }
         payload.dayOfWeek = data.dayOfWeek;
+        // Don't send date for recurring slots
+        delete payload.date;
       } else {
-        payload.date = new Date(data.date!).toISOString();
+        if (!data.date) {
+          toast.error("Please select a date for one-time slots");
+          return;
+        }
+        // Convert datetime-local format (YYYY-MM-DDTHH:mm) to ISO string
+        const dateValue = data.date;
+        const date = new Date(dateValue);
+        if (isNaN(date.getTime())) {
+          toast.error("Invalid date format");
+          return;
+        }
+        payload.date = date.toISOString();
+        // Don't send dayOfWeek for one-time slots
+        delete payload.dayOfWeek;
       }
 
       if (slot) {
@@ -118,12 +137,10 @@ export function AvailabilitySlotForm({
         toast.success("Availability slot created");
       }
       onSuccess();
-    } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to save availability slot"
-      );
+    } catch (error: any) {
+      const errorMessage = error?.message || "Failed to save availability slot";
+      toast.error(errorMessage);
+      console.error("Availability slot error:", error);
     } finally {
       setIsSubmitting(false);
     }

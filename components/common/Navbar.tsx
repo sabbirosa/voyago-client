@@ -1,5 +1,6 @@
 "use client";
 
+import { NotificationBell } from "@/components/notification/NotificationBell";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,10 +25,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Logo } from "./Logo";
 import { ThemeButton } from "./theme-button";
-import { NotificationBell } from "@/components/notification/NotificationBell";
-import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function Navbar() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -129,7 +129,10 @@ export function Navbar() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/profile" className="cursor-pointer">
+                      <Link
+                        href="/dashboard/profile"
+                        className="cursor-pointer"
+                      >
                         <User className="mr-2 h-4 w-4" />
                         <span>Profile</span>
                       </Link>
@@ -195,7 +198,7 @@ export function Navbar() {
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link
-                        href="/profile"
+                        href="/dashboard/profile"
                         className="cursor-pointer"
                         onClick={() => setMobileMenuOpen(false)}
                       >

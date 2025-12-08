@@ -61,6 +61,13 @@ export default function TouristBookingsPage() {
   }, [searchParams, router]);
 
   useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "past" || tab === "upcoming") {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     fetchBookings();
   }, [activeTab, page]);
 
@@ -225,10 +232,22 @@ export default function TouristBookingsPage() {
           <TabsTrigger value="past">Past Trips</TabsTrigger>
         </TabsList>
 
-        <TabsContent value={activeTab} className="mt-6">
+        <TabsContent value="upcoming" className="mt-6">
           <DataTableCommon
             columns={columns}
-            data={bookings}
+            data={bookings.filter((b) => activeTab === "upcoming")}
+            isLoading={loading}
+            total={total}
+            page={page}
+            pageSize={10}
+            onPageChange={setPage}
+            onPageSizeChange={() => {}}
+          />
+        </TabsContent>
+        <TabsContent value="past" className="mt-6">
+          <DataTableCommon
+            columns={columns}
+            data={bookings.filter((b) => activeTab === "past")}
             isLoading={loading}
             total={total}
             page={page}

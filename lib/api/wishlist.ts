@@ -1,4 +1,15 @@
 import { apiFetch } from "./client";
+import { getTokens } from "../auth/tokenStorage";
+
+function getAuthHeaders(): HeadersInit {
+  const tokens = getTokens();
+  if (!tokens) {
+    throw new Error("Not authenticated");
+  }
+  return {
+    Authorization: `Bearer ${tokens.accessToken}`,
+  };
+}
 
 export interface WishlistItem {
   id: string;
@@ -30,24 +41,36 @@ export interface WishlistResponse {
 
 export const wishlistApi = {
   getWishlist: async (page = 1, limit = 20): Promise<WishlistResponse> => {
-    return apiFetch(`/wishlist?page=${page}&limit=${limit}`);
+    return apiFetch(`/wishlist?page=${page}&limit=${limit}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      withCredentials: true,
+    });
   },
 
   addToWishlist: async (listingId: string): Promise<{ success: boolean; data: WishlistItem }> => {
     return apiFetch("/wishlist", {
       method: "POST",
-      body: JSON.stringify({ listingId }),
+      headers: getAuthHeaders(),
+      body: { listingId },
+      withCredentials: true,
     });
   },
 
   removeFromWishlist: async (listingId: string): Promise<{ success: boolean }> => {
     return apiFetch(`/wishlist/${listingId}`, {
       method: "DELETE",
+      headers: getAuthHeaders(),
+      withCredentials: true,
     });
   },
 
   checkWishlistStatus: async (listingId: string): Promise<{ success: boolean; data: { isInWishlist: boolean } }> => {
-    return apiFetch(`/wishlist/check/${listingId}`);
+    return apiFetch(`/wishlist/check/${listingId}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      withCredentials: true,
+    });
   },
 };
 

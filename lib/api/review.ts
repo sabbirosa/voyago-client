@@ -1,4 +1,15 @@
 import { apiFetch } from "./client";
+import { getTokens } from "../auth/tokenStorage";
+
+function getAuthHeaders(): HeadersInit {
+  const tokens = getTokens();
+  if (!tokens) {
+    throw new Error("Not authenticated");
+  }
+  return {
+    Authorization: `Bearer ${tokens.accessToken}`,
+  };
+}
 
 export interface Review {
   id: string;
@@ -58,6 +69,7 @@ export const reviewApi = {
   ): Promise<ReviewResponse> => {
     return apiFetch<ReviewResponse>("/reviews", {
       method: "POST",
+      headers: getAuthHeaders(),
       body: payload,
       withCredentials: true,
     });
@@ -79,6 +91,7 @@ export const reviewApi = {
       `/reviews/listings/${listingId}${queryString ? `?${queryString}` : ""}`,
       {
         method: "GET",
+        // Reviews by listing can be public, so no auth required
       }
     );
   },
