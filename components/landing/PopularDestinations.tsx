@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { MapPin } from "lucide-react";
 import Link from "next/link";
 
@@ -25,8 +25,11 @@ export function PopularDestinations() {
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {destinations.map((dest) => (
-            <Link key={`${dest.city}-${dest.country}`} href={`/explore?city=${dest.city}`}>
-              <Card className="group overflow-hidden cursor-pointer transition-shadow hover:shadow-lg">
+            <Link
+              key={`${dest.city}-${dest.country}`}
+              href={`/explore?city=${dest.city}`}
+            >
+              <Card className="group overflow-hidden cursor-pointer transition-shadow hover:shadow-lg pb-0">
                 <div className="relative h-48 w-full">
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                   <div className="absolute bottom-4 left-4 right-4 text-white">
@@ -45,4 +48,3 @@ export function PopularDestinations() {
     </section>
   );
 }
-
